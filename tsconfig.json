@@ -9,6 +9,13 @@
     "experimentalDecorators": true,
     "lib": [
       "es2016"
+    ],
+    "typeRoots": [
+      "../node_modules/@types"
+    ],
+    "types": [
+      "firebase",
+      "node"
     ]
   }
 }

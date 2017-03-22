@@ -1,0 +1,31 @@
+.login-panel {
+    margin: auto;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    width: 15em;
+    align-content: center;
+    border: 1px solid lightblue;
+    border-radius: 10%;
+    padding: 1em;
+}
+
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
+
+.row-centered {
+    text-align:center;
+}
+
+.login-input {
+width: 90%; 
+}
+
+.button {
+    background-color: lightblue;
+}
