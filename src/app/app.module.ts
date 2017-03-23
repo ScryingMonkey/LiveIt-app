@@ -16,15 +16,19 @@ import { AuthService } from './services/auth.service';
 import { TestService } from './services/test.service';
 
 const appRoutes: Routes = [
-  { path: 'user/:id',
+  { path: 'user',
       component: UserLandingComponent,
       data: { title: 'User Dashboard'} 
       },
-  { path: 'coach/:id', 
+  { path: 'Coach', 
       component: CoachLandingComponent,
       data: { title: 'Coach Dashboard'} 
       },
   { path: 'newcoach/:id', 
+      component: NewcoachLandingComponent,
+      data: {title: 'Coach-in-training Dashboard'} 
+    },
+  { path: 'newcoach', 
       component: NewcoachLandingComponent,
       data: {title: 'Coach-in-training Dashboard'} 
       },

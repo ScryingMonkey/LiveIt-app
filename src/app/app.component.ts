@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AngularFire, FirebaseListObservable, AngularFireAuth} from 'angularfire2';
+import { AuthService } from './services/index';
 
 @Component({
   selector: 'app-root',
@@ -7,10 +8,10 @@ import { AngularFire, FirebaseListObservable, AngularFireAuth} from 'angularfire
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app works!';
+  title = 'LiveIt App';
   items: FirebaseListObservable<any[]>;
-  constructor(af:AngularFire, auth:AngularFireAuth){
-    this.items = af.database.list('/');
-  
+  constructor(private _af:AngularFire, private _as:AuthService){
+    this.items = _af.database.list('/');
   }
+  logout() { this._as.logout(); }
 }

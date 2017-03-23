@@ -36,18 +36,29 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit() { 
+    console.log('[ LoginComponent.constructor');
     if(this.isLoggedIn) {
       console.log('...already logged in.  Redirecting...');
       this.router.navigate( ['/loggedin'] );
     }
-    // this._as.logout(); // reset login status
+    else if (this.userName == undefined || this.userName.length > 1) {
+      this.model = {};
+      this.isLoggedIn = false;
+      // this._as.logout(); // reset login status
+    }
+    else {
+      console.log('error: neither LoggedIn nor !LoggedIn');
+    }
     // get return url from route parameters or default to '/'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+    // this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
   loginWithEmail() { 
     this.loading = true;
-    this._as.loginWithEmail(this.model.username, this.model.password); }
-  signUpWithEmail(){ this._as.signUpWithEmail(); }
+    this._as.loginWithEmail(this.model.email, this.model.password); 
+  }
+  signUpWithEmail(){ 
+    this._as.signUpWithEmail(this.model.email, this.model.password); 
+  }
   loginWithGoogle() { this._as.loginWithGoogle(); }
   loginWithFacebook() { this._as.loginWithFacebook(); }
   logout() { this._as.logout(); }
