@@ -7,41 +7,37 @@ import { RouterModule, Routes }   from '@angular/router';
 
 
 import { AppComponent } from './app.component';
-import { LoginComponent } from './components/login/login.component';
-import { UserLandingComponent } from './components/user/user-landing/user-landing.component';
-import { CoachLandingComponent } from './components/coach/coach-landing/coach-landing.component';
-import { NewcoachLandingComponent } from './components/newcoach/newcoach-landing/newcoach-landing.component';
-
-import { AuthService } from './services/auth.service';
-import { TestService } from './services/test.service';
+import { CoachLandingComponent, MemberLandingComponent, LoginComponent } from './components/index';
+import { AuthService, TestService, HubService, UserService } from './services/index';
 
 const appRoutes: Routes = [
-  { path: 'user',
-      component: UserLandingComponent,
-      data: { title: 'User Dashboard'} 
-      },
-  { path: 'Coach', 
+  { path: 'member',
+      component: MemberLandingComponent,
+      data: { title: 'Member Dashboard'} 
+    },
+  { path: 'member/:id',
+      component: MemberLandingComponent,
+      data: { title: 'Member Dashboard'} 
+    },
+  { path: 'coach', 
       component: CoachLandingComponent,
       data: { title: 'Coach Dashboard'} 
-      },
-  { path: 'newcoach/:id', 
-      component: NewcoachLandingComponent,
-      data: {title: 'Coach-in-training Dashboard'} 
     },
-  { path: 'newcoach', 
-      component: NewcoachLandingComponent,
-      data: {title: 'Coach-in-training Dashboard'} 
-      },
+  { path: 'coach/:id', 
+      component: CoachLandingComponent,
+      data: { title: 'Coach Dashboard'} 
+    },
+
   { path: '',
-    redirectTo: '/login',
-    pathMatch: 'full'
-  },
+      redirectTo: '/login',
+      pathMatch: 'full'
+    },
   { path: 'login',
       component: LoginComponent
-      },
+    },
   { path: '**', 
       component: LoginComponent
-      }
+    }
 ];
 
 export const firebaseConfig = {
@@ -56,9 +52,8 @@ export const firebaseConfig = {
   declarations: [
     AppComponent,
     LoginComponent,
-    UserLandingComponent,
+    MemberLandingComponent,
     CoachLandingComponent,
-    NewcoachLandingComponent
   ],
   imports: [
     BrowserModule,
@@ -69,7 +64,7 @@ export const firebaseConfig = {
     }),
     RouterModule.forRoot(appRoutes)
   ],
-  providers: [AuthService, TestService],
+  providers: [AuthService, TestService, HubService, UserService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

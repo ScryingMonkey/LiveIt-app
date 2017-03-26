@@ -1,20 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UserLandingComponent } from './user-landing.component';
+import { MemberLandingComponent } from './member-landing.component';
 
-describe('UserLandingComponent', () => {
-  let component: UserLandingComponent;
-  let fixture: ComponentFixture<UserLandingComponent>;
+describe('MemberLandingComponent', () => {
+  let component: MemberLandingComponent;
+  let fixture: ComponentFixture<MemberLandingComponent>;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ UserLandingComponent ]
+      declarations: [ MemberLandingComponent ]
     })
     .compileComponents();
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(UserLandingComponent);
+    fixture = TestBed.createComponent(MemberLandingComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
