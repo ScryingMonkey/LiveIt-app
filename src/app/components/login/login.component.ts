@@ -5,19 +5,20 @@ import { Subject }    from 'rxjs/Subject';
 import { BehaviorSubject } from "rxjs/Rx";
 import { Router, ActivatedRoute }   from '@angular/router';
 
-import { AuthService, TestService, HubService } from '../../services/index';
+import { AuthService, TestService } from '../../services/index';
+import { HubService } from '../../services/hub.service';
 import { User } from '../../models/index';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.css'],
+  
 })
 
 export class LoginComponent implements OnInit {  
   model:any = {  };
   public isLoggedIn: boolean;
   public user: User;
-  private loading: boolean = false;
   private signingup: boolean = false;
   
   private returnUrl: string;
@@ -25,11 +26,11 @@ export class LoginComponent implements OnInit {
   private liTitleKey: string;
  
   constructor(
+    private _hub: HubService,
     public _as: AuthService, 
     public af: AngularFire, 
     public router: Router, 
-    private _test:TestService,
-    private _hub:HubService,
+    private _test: TestService,
     private route: ActivatedRoute ) {
     console.log('[ LoginComponent.constructor');
     this._as.getIsLoggedIn$().subscribe(res => this.isLoggedIn = res);
@@ -51,16 +52,16 @@ export class LoginComponent implements OnInit {
     console.log('signingup: '+this.signingup);
   }
   signUpWithEmail(){ 
-    this.loading = true; 
+    this._hub.setLoading(true); 
     this._as.signUpWithEmail(this.model.displayName, this.model.email, this.model.password); 
   }
-  loginWithEmail() { 
-    this.loading = true;
+  loginWithEmail() {
+    this._hub.setLoading(true); 
     this._as.loginWithEmail(this.model.email, this.model.password); 
   }
-  loginWithGoogle() { this.loading = true; this._as.loginWithGoogle(); }
-  loginWithFacebook() { this.loading = true; this._as.loginWithFacebook(); }
-  logout() { this.loading = false; this._as.logout(); }
+  loginWithGoogle() { this._hub.setLoading(true); this._as.loginWithGoogle(); }
+  loginWithFacebook() { this._hub.setLoading(true);this._as.loginWithFacebook(); }
+  logout() { this._hub.setLoading(false); this._as.logout(); }
   loginTester() { this._as.loginTester(); }
   userJson() { return JSON.stringify(this.user); }
 }

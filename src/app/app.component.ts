@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { AngularFire, FirebaseListObservable, AngularFireAuth} from 'angularfire2';
-
 import { AuthService, TestService } from './services/index';
+
+import { NotificationsComponent, NotificationsService } from './components/notifications/index';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +16,8 @@ export class AppComponent {
   constructor(
         private _af:AngularFire, 
         private _as:AuthService,
-        private _test:TestService
+        private _test:TestService,
+        private _toast:NotificationsService
         ){
     this.items = _af.database.list('/');
   }

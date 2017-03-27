@@ -3,10 +3,15 @@
     <h3>
       Nav Bar:  
       <button id="btnLogout" class="my_btn btn btn-secondary" (click)="logout()">Log Out</button>
-      <button id="btnTesting" class="my_btn btn btn-secondary" (click)="_test.switchTesting()">Testing: {{ _test.testing | async}}</button>
-      <button id="btnTesting" class="my_btn btn btn-secondary" (click)="_as.createUserinDB(testuser)">createUser()</button>      
+      <button id="btnTesting" class="my_btn btn btn-secondary" (click)="_test.switchTesting()">Testing: {{ _test.testing | async }}</button>
+      <button *ngIf="(_test.testing | async)" id="btnTestCreateUser" class="my_btn btn btn-secondary" (click)="_as.createUserinDB(testuser)">createUser()</button>  
+      <button *ngIf="(_test.testing | async)" id="btnTestToast" class="my_btn btn btn-secondary" (click)="_hub.testToast()">test toast</button>      
     </h3>
   </div>
+  
+  <!--<simple-notifications [options]="options"></simple-notifications>-->
+  <notifications></notifications>
   <h1>
- <router-outlet></router-outlet>
+  <router-outlet></router-outlet>
   </h1>
+  

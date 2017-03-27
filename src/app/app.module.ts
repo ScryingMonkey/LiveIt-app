@@ -5,10 +5,10 @@ import { HttpModule } from '@angular/http';
 import { AngularFireModule, AuthMethods, AuthProviders } from 'angularfire2';
 import { RouterModule, Routes }   from '@angular/router';
 
-
 import { AppComponent } from './app.component';
 import { CoachLandingComponent, MemberLandingComponent, LoginComponent } from './components/index';
 import { AuthService, TestService, HubService, UserService } from './services/index';
+import { NotificationsComponent, NotificationsService } from './components/notifications/index';
 
 const appRoutes: Routes = [
   { path: 'member',
@@ -54,6 +54,7 @@ export const firebaseConfig = {
     LoginComponent,
     MemberLandingComponent,
     CoachLandingComponent,
+    NotificationsComponent 
   ],
   imports: [
     BrowserModule,
@@ -64,7 +65,13 @@ export const firebaseConfig = {
     }),
     RouterModule.forRoot(appRoutes)
   ],
-  providers: [AuthService, TestService, HubService, UserService],
+  providers: [
+    AuthService, 
+    TestService, 
+    HubService, 
+    UserService,
+    NotificationsService
+    ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -5,12 +5,12 @@ import { Observable} from 'rxjs/observable';
 import { Subject }    from 'rxjs/Subject';
 import { BehaviorSubject } from "rxjs/Rx";
 import { Router }   from '@angular/router';
+
 import { User, UserAuth, UserProfile } from '../models/index';
-import { UserService } from '../services/index';
+import { UserService, HubService } from '../services/index';
 
 @Injectable() 
 export class AuthService {
-  // TODO: refactor all subscriptions to return values from current user
   private user: BehaviorSubject<User> = new BehaviorSubject(new User());
   private isLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject(false);
   private authstate: FirebaseAuthState; 
@@ -18,7 +18,8 @@ export class AuthService {
   constructor (
     private _af: AngularFire, 
     private router: Router,
-    private _us: UserService
+    private _us: UserService, 
+    public _hub: HubService
     ){
     console.log('[ AuthService.constructor()');
     // subscribe to auth object
@@ -63,9 +64,14 @@ export class AuthService {
   loginWithEmail(email, password) {
     console.log("Signing in with email:"+email);
     this._af.auth.login(
-      { email: email, password: password, },
-      { provider: AuthProviders.Password, method: AuthMethods.Password, }
-      );
+          { email: email, password: password, },
+          { provider: AuthProviders.Password, method: AuthMethods.Password, } )
+        .then(res => console.log('success for '+email+', '+res))
+        .catch(err => {
+          console.log(err,'error for '+email+', '+err);
+          this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
+          this._hub.setLoading(false);
+        });
     // Pull current global user object.
     let user = new User();
     // user.setDummyValues();
@@ -79,7 +85,14 @@ export class AuthService {
     this.user.next(user);  
   }
   loginWithFacebook() {
-    this._af.auth.login({ provider: AuthProviders.Facebook, method: AuthMethods.Popup, });
+    this._af.auth.login(
+          { provider: AuthProviders.Facebook, method: AuthMethods.Popup, })
+        .then(res => console.log('success for Facebook login.  '+res))
+        .catch(err => {
+          console.log(err,'error for Facebook login.  '+err);
+          this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
+          this._hub.setLoading(false);
+          });
     // create new user object.
     let user = new User();
     // Update with keys for this provider.
@@ -91,7 +104,14 @@ export class AuthService {
     console.log('...updated settings for Facebook login');
   }
   loginWithGoogle() {
-    this._af.auth.login({ provider: AuthProviders.Google, method: AuthMethods.Popup, });
+    this._af.auth.login(
+          { provider: AuthProviders.Google, method: AuthMethods.Popup, })
+        .then(res => console.log('success for Facebook login.  '+res))
+        .catch(err => {
+          console.log(err,'error for Facebook login.  '+err);
+          this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
+          this._hub.setLoading(false);
+          });
     // create new user object.
     let user = new User();
     // Update with keys for this provider.

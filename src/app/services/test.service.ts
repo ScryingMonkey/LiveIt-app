@@ -5,10 +5,9 @@ import { BehaviorSubject } from "rxjs/Rx";
 export class TestService {
   public testing:BehaviorSubject<boolean> = new BehaviorSubject(false);
 
-  constructor() { }
+  constructor( ) { }
 
   switchTesting() {
     this.testing.next(!this.testing.getValue())
   }
-
 }

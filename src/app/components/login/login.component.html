@@ -1,5 +1,5 @@
 <div class="col-md-offset-3 col-md-6 login-panel ">  
-
+    
     <form *ngIf="!signingup" name="form" (ngSubmit)="f.form.valid && loginWithEmail()" #f="ngForm" novalidate>
     
         <div class="form-group" [ngClass]="{ 'has-error': f.submitted && !username.valid }">
@@ -21,7 +21,7 @@
         
         <div class="form-group">
             <button [disabled]="loading" id="btnLogin" class="btn btn-primary">Login</button>
-            <img *ngIf="loading" src={{_hub.loadingAnimationUrl}} />
+            <img *ngIf="(this._hub.getLoading() | async)" src={{_hub.loadingAnimationUrl}} />
             <button id="btnLogout" class="my_btn btn btn-action" *ngIf="isLoggedIn === true" (click)="logout()">Log Out</button>
             <a (click)="_as.resetPassword()" class="btn btn-link">Reset Password</a>   
             <a (click)="switchSigningup()" class="btn btn-link">Sign up</a>    
@@ -60,7 +60,7 @@
         
         <div class="form-group">
             <button [disabled]="loading" id="btnSignUp" class="btn btn-primary">Sign Up</button>
-            <img *ngIf="loading" src=_hub.loadingAnimationUrl />
+            <img *ngIf="(this._hub.getLoading() | async)" src=_hub.loadingAnimationUrl />
         </div>
     </form>
     <br>
