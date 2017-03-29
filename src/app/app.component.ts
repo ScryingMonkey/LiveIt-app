@@ -25,8 +25,9 @@ export class AppComponent {
 }
 
 // TODO: 
-// [] Sign up form
+// [] Retrieve user from db and update global user
 // [] route landing page based on user
+// [] Sign up form
 // [] build Coach framework: FirstTimeLogin, Dashboard, Training, Anatomy, Nutrition, Diet, Articles, Tips  & Tricks
 // [] Coach survey
 // [] build Member framework: FirstTimeLogin, Dashboard, Articles, ToDos, Fun

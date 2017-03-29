@@ -10,4 +10,9 @@ export class TestService {
   switchTesting() {
     this.testing.next(!this.testing.getValue())
   }
+  //printers ===========================================
+  printo(label:string, user:any) { 
+    console.log('...'+label+':'+user);
+    console.dir(user);
+   }
 }

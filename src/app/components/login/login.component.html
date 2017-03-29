@@ -23,7 +23,7 @@
             <button [disabled]="loading" id="btnLogin" class="btn btn-primary">Login</button>
             <img *ngIf="(this._hub.getLoading() | async)" src={{_hub.loadingAnimationUrl}} />
             <button id="btnLogout" class="my_btn btn btn-action" *ngIf="isLoggedIn === true" (click)="logout()">Log Out</button>
-            <a (click)="_as.resetPassword()" class="btn btn-link">Reset Password</a>   
+            <a (click)="_user.resetPassword()" class="btn btn-link">Reset Password</a>   
             <a (click)="switchSigningup()" class="btn btn-link">Sign up</a>    
              
                
@@ -70,16 +70,16 @@
     <a class="my_btn btn btn-block btn-social btn-google" (click)="loginWithGoogle()" >
         <span class="fa fa-google"></span> Sign in with Google </a>
 </div>
-<div *ngIf="(_test.testing | async)" class='col-md-offset-3 col-md-6 testingBox'>
+<div *ngIf="(_hub._test.testing | async)" class='col-md-offset-3 col-md-6 testingBox'>
     <br>
     <hr>
     <button id="btnTester" class="my_btn btn btn-secondary" (click)="loginTester()">Tester</button>
     <button id="btnTester" class="my_btn btn btn-secondary" (click)="logout()">Reset</button>
-    <div *ngIf="(_as.getIsLoggedIn$() | async)">
+    <div *ngIf="(_user.getIsLoggedIn$() | async)">
         You are logged in.
         current user:  {{ userJson() }} 
     </div>
-    <div *ngIf="!(_as.getIsLoggedIn$() | async)">
+    <div *ngIf="!(_user.getIsLoggedIn$() | async)">
         No user.  Not logged in.
     </div>   
     isLoggedIn$ = {{ isLoggedIn }}<br>

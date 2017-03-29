@@ -5,9 +5,9 @@ import { Subject }    from 'rxjs/Subject';
 import { BehaviorSubject } from "rxjs/Rx";
 import { Router, ActivatedRoute }   from '@angular/router';
 
-import { AuthService, TestService } from '../../services/index';
-import { HubService } from '../../services/hub.service';
+import { UserService, HubService } from '../../services/index';
 import { User } from '../../models/index';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -27,14 +27,13 @@ export class LoginComponent implements OnInit {
  
   constructor(
     private _hub: HubService,
-    public _as: AuthService, 
     public af: AngularFire, 
     public router: Router, 
-    private _test: TestService,
+    private _user: UserService,
     private route: ActivatedRoute ) {
     console.log('[ LoginComponent.constructor');
-    this._as.getIsLoggedIn$().subscribe(res => this.isLoggedIn = res);
-    this._as.getUser$().subscribe(res => this.user = res);
+    this._user.getIsLoggedIn$().subscribe(res => this.isLoggedIn = res);
+    this._user.getUser$().subscribe(res => this.user = res);
   }
 
   ngOnInit() { 
@@ -53,15 +52,15 @@ export class LoginComponent implements OnInit {
   }
   signUpWithEmail(){ 
     this._hub.setLoading(true); 
-    this._as.signUpWithEmail(this.model.displayName, this.model.email, this.model.password); 
+    this._user.signUpWithEmail(this.model.displayName, this.model.email, this.model.password); 
   }
   loginWithEmail() {
     this._hub.setLoading(true); 
-    this._as.loginWithEmail(this.model.email, this.model.password); 
+    this._user.loginWithEmail(this.model.email, this.model.password); 
   }
-  loginWithGoogle() { this._hub.setLoading(true); this._as.loginWithGoogle(); }
-  loginWithFacebook() { this._hub.setLoading(true);this._as.loginWithFacebook(); }
-  logout() { this._hub.setLoading(false); this._as.logout(); }
-  loginTester() { this._as.loginTester(); }
+  loginWithGoogle() { this._hub.setLoading(true); this._user.loginWithGoogle(); }
+  loginWithFacebook() { this._hub.setLoading(true);this._user.loginWithFacebook(); }
+  logout() { this._hub.setLoading(false); this._user.logout(); }
+  loginTester() { this._user.loginTester(); }
   userJson() { return JSON.stringify(this.user); }
 }
