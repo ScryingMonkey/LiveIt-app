@@ -25,116 +25,126 @@ export class UserService {
     this.fbuserref = _af.database.list('/users');
     _af.database.list('/user', 
       { query: { orderByChild: 'key', equalTo: this.userKey }})
-      .subscribe(res => this.user.next(this.convertToUser(res)));
+      .subscribe(res => {
+        this._hub._test.printo('...received user from db', res);
+        this.processResOfQueryByKey(res);
+      });
     // set up events for when global user updates
     this.user.subscribe((res:User)=>{
       // TODO: What should happen when global user object updates?
+      console.log('[ UserService.constructor().user.subscribe()')
+      this._hub._test.printo('...user updated',res);
     });
     // triggers when auth state changes
     this._auth.getIsLoggedIn$().subscribe((loggedIn:boolean)=>{
+      console.log("[ UserService.constructor.getIsLoggedIn$.subscription");      
       if (loggedIn){
-        console.log("[ UserService.constructor.getIsLoggedIn$.subscription");
-        let nuser = new User();
-        this._hub._test.printo('...creating nuser', nuser);
-        let auth = this._auth.getAuthstate(); // get static _as.auth.auth from _auth
-
-        nuser = this.updateUser(nuser, auth.auth); // update user object from from auth.auth    
-        
-        this.user.next(nuser); // Update _user global user observable from user object
-        
+        let user = this.user.getValue(); // current value of global user
+        let authState = this._auth.getAuthstate(); // get static _as.auth.auth from _auth
+        this.updateUser(user,authState.auth) // Update global user from _as.auth object and attempt to retrieve user from db.  If no user is found, create one.         
         console.log( '...logged in and updated!' ); // print global user observable to make sure everything is updated
-        this._hub._test.printo('auth.auth',auth.auth);
-        this._hub._test.printo('this.user',this.user);
-
-        // create route path from user userType
-        let routePath = ''+this.user.getValue().profile.userType//+'/'v+this.user.getValue().uid;  
-        // Route view to appropriate landing page
-        console.log('...redirecting to '+routePath);
-        this.router.navigate( [routePath] );
+        let routePath:string = this.makeInitialRoutePath(this.user.getValue()); // create route path
+        console.log('...redirecting to: '+routePath);
+        this.router.navigate( [routePath] ); // Route view to appropriate landing page
       } else {
-        this.user.next( new User() );
-        // this.user.complete(); }
+        this.user.next( new User() ); // blank out global user
         this._hub._test.printo('...logged out. this.user', this.user);
         this.router.navigate( ['/login'] );
       }
     });
   }
 
+  makeInitialRoutePath(user:User){
+    console.log('[ UserService.makeInitialRoutePath()...'+user.profile.needInfo); 
+    this._hub._test.printo('...user.profile',user.profile);      
+    let routePath:string = '';
+    if (user.profile.needInfo) { 
+      routePath = 'survey'; 
+    } else { 
+      routePath = ''+user.profile.userType;//+'/'v+this.user.getValue().uid;
+    }
+    return routePath;
+  }
   createUserinDB(user:User) {
-    // TODO need to be logged in before creating user
+    // Need to be logged in before creating user
     console.log('[ UserService.createUser()');   
-    let key = user.auth.email;
-    let sendobject = user
-    sendobject['key'] = key; 
-    console.log('sendobject:');
-    console.dir(sendobject);
-    this.fbuserref.push(sendobject)
+    // let key = user.auth.email;
+    // let sendobject = user
+    // sendobject['key'] = key; 
+    // console.log('sendobject:');
+    // console.dir(sendobject);
+    user.profile.needInfo = true;
+    this.fbuserref.push(user)
       .then(res => console.log('success for '+user+''+res))
       .catch(err => console.log(err,'error: '+err));
   }
-  retrieveUser(key:string){
-  // update global user object from db by key
-    this.userKey.next(key);
-    return this.user.getValue();
-  }
   convertToUser(res){
   // convert firebase response to User object
-    let user = new User();
-    user.auth = res.auth;
-    user.profile = res.profile;
+    console.log('[ UserService.convertToUser(res)');  
+    this._hub._test.printo('...res',res);
+    let user = new User();     
+    if(res.length > 0){
+      user.auth = res.auth;
+      user.profile = res.profile;
+    } else {
+      console.log('...res empty.  returning this.user');
+      user = this.user.getValue();
+    }
     return user;
   }
 
 // User update pipeline =============================================================
-  updateUser(user,auth){
+  updateUser(user:User,auth){
     // Summary method for user update pipeline.
       console.log('[ UserService.updateUserFromAuth('+user+','+auth+')');
-
-      // Update nuser.auth from _as.auth object
-      user = this.updateUserAuthFromAuthObj(user,auth);
-
-      // TODO: Update nuser.profile from firebase database
-      user = this.updateUserProfileFromDatabase(user);
-
-      // print out nuser to verify update
-      this._hub._test.printo("......returning updated user from auth.auth: ", user );
-
-      // Update global user object
-      this.user.next(user);
-
-      return user;
+      this.updateUserAuthFromAuthObj(user,auth);
+      if (user.profile.userType == 'new'){
+        // Do nothing
+      } else {
+        this.updateKeyOfQueryByKey(auth[user.auth.emailKey]);
+      }
   }
   updateUserAuthFromAuthObj(user:User,authObj){
   // Update user object from auth.auth object from firebase
   // Returns updated user object
     console.log('[ UserService.updateUserAuthFromAuthObj('+user+','+authObj+')');
-    let auth = new UserAuth();
+    let auth:UserAuth = this.user.getValue().auth;
+    user.key = authObj[auth.emailKey];
     auth.email = authObj.providerData[0][auth.emailKey]
     auth.photoURL = authObj.providerData[0][auth.photoURLKey]    
     auth.providerId = authObj.providerData[0][auth.providerIdKey]    
     auth.uid = authObj.providerData[0][auth.uidKey]   
-
     user.auth = auth;
-    this._hub._test.printo('..updated nuser.auth',user.auth);
-
-    return user;
+    this._hub._test.printo('..updated user.auth',user.auth);
+    this.user.next(user); // update global user
   }
-  updateUserProfileFromDatabase(user:User) {
-  // Update user object from a database lookup of user.
-  // If no user found, create user in db
-  // Returns updated user object
-    console.log('[ UserService.updateUserProfileFromDatabase('+user+')');
-    let dbuser = this.retrieveUser(user.auth.email); // update global user object from db
-    if (dbuser) {
-      user.profile = dbuser.profile;
-      this._hub._test.printo('...updated nuser.profile from db', user.profile); 
-    } else {
-      this._hub._test.printo('...user not found in db', dbuser);
-      // Update user in users db
-      this.createUserinDB(user);
-      this._hub._test.printo('...user created in db', user);      
+  updateKeyOfQueryByKey(key:string){
+  // update global user object from db by key
+  // If user is found in db, triggers processResOfQueryByKey()
+    console.log('[ UserService.retrieveUser('+key+')');   
+    this.userKey.next(key);
+  }
+  processResOfQueryByKey(res){
+  // Updates global user.profile if user is found.  Else creates user in db.
+    console.log('[ UserService.processResOfQueryByKey()');           
+    let userInDB = res.length > 0;
+    if(userInDB){
+      console.log('...received res, updating user');
+      this.updateUserProfileFromDatabase(res); // update global user object from query response
+    }else{
+      console.log('...no res from DB.  Routing to login.');
+      this.user.next( new User() ); // blank out global user
+      this.router.navigate( ['/login'] ); 
     }
-    return user;
+  }
+  updateUserProfileFromDatabase(res) {
+  // Update global user object from a database query response.
+  // Returns updated user object
+    console.log('[ UserService.updateUserProfileFromDatabase('+res+')');
+    let user = this.user.getValue();
+    let profile:UserProfile = this.convertToUser(res[0]).profile;
+    user.profile = profile;
+    this.user.next(user); // update global user
   }
 
   // Logins, Logouts and Sign ups ===========================================

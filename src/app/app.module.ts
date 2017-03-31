@@ -6,7 +6,7 @@ import { AngularFireModule, AuthMethods, AuthProviders } from 'angularfire2';
 import { RouterModule, Routes }   from '@angular/router';
 
 import { AppComponent } from './app.component';
-import { CoachLandingComponent, MemberLandingComponent, LoginComponent } from './components/index';
+import { CoachLandingComponent, MemberLandingComponent, LoginComponent, SurveyComponent } from './components/index';
 import { AuthService, TestService, HubService, UserService } from './services/index';
 import { NotificationsComponent, NotificationsService } from './components/notifications/index';
 
@@ -27,7 +27,10 @@ const appRoutes: Routes = [
       component: CoachLandingComponent,
       data: { title: 'Coach Dashboard'} 
     },
-
+  { path: 'survey', 
+      component: SurveyComponent,
+      data: { title: 'Survey'} 
+    },
   { path: '',
       redirectTo: '/login',
       pathMatch: 'full'
@@ -54,8 +57,9 @@ export const firebaseConfig = {
     LoginComponent,
     MemberLandingComponent,
     CoachLandingComponent,
-    NotificationsComponent 
-  ],
+    NotificationsComponent,
+    SurveyComponent
+    ],
   imports: [
     BrowserModule,
     FormsModule,

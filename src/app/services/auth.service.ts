@@ -29,7 +29,6 @@ export class AuthService {
       } else { // if no auth object exists
         console.log( '...no auth...not logged in' );
         this.isLoggedIn.next(false);  // updating isLoggedIn triggers UserService to update user        
-        console.log("...isLoggedIn == " + this.isLoggedIn.value);           
       }
     } );
   }
@@ -48,9 +47,9 @@ export class AuthService {
           });
       // Create new user object and update with keys for this provider.
       let nuser = new User();
-      // TODO: Pull display name and picture data from user db and set profile values.
       nuser.auth.emailKey = 'email';
       nuser.auth.userHasPicture = false;
+      this._hub._test.printo('returning nuser updated with keys',nuser);      
       return nuser;
   }
   loginWithFacebook() {
@@ -69,6 +68,7 @@ export class AuthService {
       nuser.auth.userHasPicture = true;
       nuser.auth.photoURLKey = 'photoURL';
       console.log('...updated settings for Facebook login');
+      this._hub._test.printo('returning nuser updated with keys',nuser);      
       return nuser;      
   }
   loginWithGoogle() {
@@ -87,6 +87,7 @@ export class AuthService {
       nuser.auth.userHasPicture = true;
       nuser.auth.photoURLKey = 'photoURL';
       console.log('...updated settings for Google login');
+      this._hub._test.printo('returning nuser updated with keys',nuser);
       return nuser;
   }
   logout() {
@@ -110,9 +111,11 @@ export class AuthService {
     nuser.auth.userHasPicture = false;
     nuser.profile.displayName = displayName;
     nuser.profile.needInfo = true;
+    nuser.profile.userType = 'new';
  
     // Create User in Firebase User db
     this._af.auth.createUser({ email: email, password: password });
+    this._hub._test.printo('returning nuser updated with auth keys',nuser);   
     return nuser;
   }
   

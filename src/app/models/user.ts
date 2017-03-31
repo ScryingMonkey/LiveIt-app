@@ -3,14 +3,16 @@ import { UserAuth, UserProfile } from './index';
 export class User {
     public auth?: UserAuth
     public profile?: UserProfile
+    public key?: string
 
-    constructor() {
+    constructor() { 
         this.setDummyValues();
     }
     setValues(auth:UserAuth, profile:UserProfile) {
         this.auth = auth;
         this.profile = profile;
     }
+    setKey(key:string){ this.key = key; }
     setAuth(auth:UserAuth) { this.auth = auth; }
     setProfile(profile:UserProfile) { this.profile = profile; }
     setDummyValues() {
@@ -28,17 +30,10 @@ export class User {
                 'uid',
                 'name'
             );
-        // console.log('...dummy auth:');
-        // console.dir(newauth);
-
         let newprofile = new UserProfile();
-        newprofile.setValues(false, 'Dummy User', 'Dummy', 0);
-        // console.log('...dummy newprofile:');
-        // console.dir(newprofile);
-
+        newprofile.setValues(true, 'Dummy User', 'Dummy', 0);
         this.setValues(newauth,newprofile);
-        // console.log('...dummy user:');
-        // console.dir(this);
+        this.key = "";
     }
 }
 
