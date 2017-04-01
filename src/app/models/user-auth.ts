@@ -1,37 +1,42 @@
 export class UserAuth {
+    public displayName:string
     public email:string
-    public emailKey: string
     public userHasPicture:any
-    public photoURL:string
-    public photoURLKey:string
+    public photoURL?:string
     public providerId:string
-    public providerIdKey:string
-    public uid: string
-    public uidKey: string
-    public displayNameKey: string
+    public uid: string 
+    // public displayNameKey: string    
+    // public emailKey: string
+    // public photoURLKey:string
+    // public providerIdKey:string
+    // public uidKey: string
+    
 
     constructor(){
-        this.email = '';
-        this.emailKey = '';
+        this.displayName = 'Dummy User';
+        this.email = 'dummy@dummyprovider.com';
         this.userHasPicture = false;
-        this.photoURL = '';
-        this.photoURLKey = '';
-        this.providerId = '';
-        this.providerIdKey = '';
-        this.uid = '';
-        this.uidKey = '';
-        this.displayNameKey = '';
+        this.photoURL = 'http://png.clipart.me/graphics/thumbs/103/crash-test-dummy_103003187.jpg';
+        this.providerId = 'dummyProvider';
+        this.uid = 'dummy@dummyProvider';
+        // this.emailKey = '';
+        // this.photoURLKey = '';        
+        // this.providerIdKey = '';
+        // this.uidKey = '';
+        // this.displayNameKey = '';
+ 
     }
-    setValues(email, emailKey, userHasPicture, photoURL, photoURLKey, providerId, providerIdKey, uid, uidKey, displayNameKey) {
+    setValues(displayName, email, userHasPicture, photoURL, providerId, uid) {
+        this.displayName = displayName;
         this.email = email;
-        this.emailKey = emailKey;
         this.userHasPicture = userHasPicture;
         this.photoURL = photoURL;
-        this.photoURLKey = photoURLKey;
         this.providerId = providerId;
-        this.providerIdKey = providerIdKey;
         this.uid = uid;
-        this.uidKey = uidKey;
-        this.displayNameKey = displayNameKey;
+        // this.emailKey = emailKey;
+        // this.photoURLKey = photoURLKey;        
+        // this.providerIdKey = providerIdKey;        
+        // this.uidKey = uidKey;
+        // this.displayNameKey = displayNameKey;
     }
 }

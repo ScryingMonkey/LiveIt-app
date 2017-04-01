@@ -65,17 +65,15 @@ export class UserService {
     }
     return routePath;
   }
-  createUserinDB(user:User) {
+  createUserinDB(auth:UserAuth) {
     // Need to be logged in before creating user
     console.log('[ UserService.createUser()');   
-    // let key = user.auth.email;
-    // let sendobject = user
-    // sendobject['key'] = key; 
-    // console.log('sendobject:');
-    // console.dir(sendobject);
-    user.profile.needInfo = true;
-    this.fbuserref.push(user)
-      .then(res => console.log('success for '+user+''+res))
+    let nuser:User = new User().newUser(auth);
+    this.fbuserref.push(nuser.key+'/'+nuser)
+      .then(res => {
+        this.userKey.next(nuser.key);
+        console.log('success for '+nuser+', '+res) 
+      })
       .catch(err => console.log(err,'error: '+err));
   }
   convertToUser(res){
@@ -101,7 +99,7 @@ export class UserService {
       if (user.profile.userType == 'new'){
         // Do nothing
       } else {
-        this.updateKeyOfQueryByKey(auth[user.auth.emailKey]);
+        this.updateKeyOfQueryByKey(auth.email);
       }
   }
   updateUserAuthFromAuthObj(user:User,authObj){
@@ -109,11 +107,12 @@ export class UserService {
   // Returns updated user object
     console.log('[ UserService.updateUserAuthFromAuthObj('+user+','+authObj+')');
     let auth:UserAuth = this.user.getValue().auth;
-    user.key = authObj[auth.emailKey];
-    auth.email = authObj.providerData[0][auth.emailKey]
-    auth.photoURL = authObj.providerData[0][auth.photoURLKey]    
-    auth.providerId = authObj.providerData[0][auth.providerIdKey]    
-    auth.uid = authObj.providerData[0][auth.uidKey]   
+    user.key = user.convertKey(authObj.email);
+    console.log('...reshaped user.key: '+user.key);    
+    auth.email = authObj.email;
+    auth.photoURL = authObj.photoURL;
+    auth.providerId = authObj.providerData[0].providerId    
+    auth.uid = authObj.uid;
     user.auth = auth;
     this._hub._test.printo('..updated user.auth',user.auth);
     this.user.next(user); // update global user

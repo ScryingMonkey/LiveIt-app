@@ -6,35 +6,29 @@ export class User {
     public key?: string
 
     constructor() { 
-        this.setDummyValues();
+        let newauth = new UserAuth();
+        let newprofile = new UserProfile();
+        this.setValues(newauth,newprofile);
+        this.key = this.convertKey(newauth.email);        
+    }
+    newUser(auth:UserAuth):User {
+        return <User> {
+            auth: auth,
+            profile: new UserProfile().newUser(auth.displayName),
+            key: this.convertKey(auth.email)
+        }
     }
     setValues(auth:UserAuth, profile:UserProfile) {
         this.auth = auth;
         this.profile = profile;
+        this.key = this.convertKey(auth.email);                
     }
     setKey(key:string){ this.key = key; }
-    setAuth(auth:UserAuth) { this.auth = auth; }
-    setProfile(profile:UserProfile) { this.profile = profile; }
-    setDummyValues() {
-        console.log('[ User.dummy() setting dummy values');
-        let newauth = new UserAuth();
-        newauth.setValues( 
-                'dummy@dummyprovider.com',
-                'email',
-                true,
-                "http://png.clipart.me/graphics/thumbs/103/crash-test-dummy_103003187.jpg",
-                'photoURL',
-                'dummyProvider',
-                'providerId',
-                'dummy@dummyProvider',
-                'uid',
-                'name'
-            );
-        let newprofile = new UserProfile();
-        newprofile.setValues(true, 'Dummy User', 'Dummy', 0);
-        this.setValues(newauth,newprofile);
-        this.key = "";
+    convertKey(email:string){ return email.replace('@','at').replace('.','dot'); }
+    setAuth(auth:UserAuth) { 
+        this.auth = auth; 
     }
+    setProfile(profile:UserProfile) { this.profile = profile; }
 }
 
 

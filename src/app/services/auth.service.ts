@@ -1,17 +1,12 @@
 import { Injectable } from '@angular/core';
 import { AngularFire, AuthProviders, AuthMethods, FirebaseAuthState } from 'angularfire2';
-import { Subscription} from 'rxjs/subscription';
 import { Observable} from 'rxjs/observable';
-import { Subject }    from 'rxjs/Subject';
 import { BehaviorSubject } from "rxjs/Rx";
-
-import { User } from '../models/index';
 import { HubService } from '../services/index';
 
 @Injectable() 
 export class AuthService {
-  private authstate: FirebaseAuthState; 
-  private isLoggedIn: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  private auth: BehaviorSubject<any> = new BehaviorSubject('');
 
   constructor (
     private _af: AngularFire, 
@@ -19,132 +14,81 @@ export class AuthService {
     ){
     console.log('[ AuthService.constructor()');
     // subscribe to auth object
-    this._af.auth.subscribe((auth: FirebaseAuthState) => {
+    this._af.auth.subscribe((res: FirebaseAuthState) => {
       console.log("[ AuthService.constructor._af.auth.subscription");
-      this.authstate = auth;
-      this._hub._test.printo('authstate:',this.authstate);
-      if(auth) {
-        console.log('...auth == true, updating isLoggedIn.');
-        this.isLoggedIn.next(true);  // updating isLoggedIn triggers UserService to update user
-      } else { // if no auth object exists
-        console.log( '...no auth...not logged in' );
-        this.isLoggedIn.next(false);  // updating isLoggedIn triggers UserService to update user        
-      }
-    } );
+      this.auth.next(res.auth);
+      this._hub._test.printo('...updating _auth.auth:',res.auth);
+    });
   }
 
 // Login/Logout methods =======================================================
   loginWithEmail(email, password) {
-      console.log("Signing in with email:"+email);
+      console.log("[ AuthService: Signing in with email: "+email);
       this._af.auth.login(
             { email: email, password: password, },
             { provider: AuthProviders.Password, method: AuthMethods.Password, } )
-          .then(res => console.log('success for '+email+', '+res))
+          .then(res => console.log('...success for '+email+', '+res))
           .catch(err => {
-            console.log(err,'error for '+email+', '+err);
+            console.log(err,'...error for '+email+', '+err);
             this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
             this._hub.setLoading(false);
           });
-      // Create new user object and update with keys for this provider.
-      let nuser = new User();
-      nuser.auth.emailKey = 'email';
-      nuser.auth.userHasPicture = false;
-      this._hub._test.printo('returning nuser updated with keys',nuser);      
-      return nuser;
+      // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.
   }
   loginWithFacebook() {
+      console.log("[ AuthService: Signing in with Facebook");    
       this._af.auth.login(
             { provider: AuthProviders.Facebook, method: AuthMethods.Popup, })
-          .then(res => console.log('success for Facebook login.  '+res))
+          .then(res => console.log('...success for Facebook login.  '+res))
           .catch(err => {
-            console.log(err,'error for Facebook login.  '+err);
+            console.log(err,'...error for Facebook login.  '+err);
             this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
             this._hub.setLoading(false);
             });
-      // Create new user object and update with keys for this provider.
-      let nuser = new User();
-      nuser.auth.displayNameKey = 'displayName';
-      nuser.auth.emailKey = 'email';
-      nuser.auth.userHasPicture = true;
-      nuser.auth.photoURLKey = 'photoURL';
-      console.log('...updated settings for Facebook login');
-      this._hub._test.printo('returning nuser updated with keys',nuser);      
-      return nuser;      
+      // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.    
   }
   loginWithGoogle() {
+      console.log("[ AuthService: Signing in with Google");        
       this._af.auth.login(
             { provider: AuthProviders.Google, method: AuthMethods.Popup, })
-          .then(res => console.log('success for Facebook login.  '+res))
+          .then(res => console.log('...success for Facebook login.  '+res))
           .catch(err => {
-            console.log(err,'error for Facebook login.  '+err);
+            console.log(err,'...error for Facebook login.  '+err);
             this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
             this._hub.setLoading(false);
             });
-      // Create new user object and update with keys for this provider.
-      let nuser = new User();
-      nuser.auth.displayNameKey = 'displayName';
-      nuser.auth.emailKey = 'email';
-      nuser.auth.userHasPicture = true;
-      nuser.auth.photoURLKey = 'photoURL';
-      console.log('...updated settings for Google login');
-      this._hub._test.printo('returning nuser updated with keys',nuser);
-      return nuser;
+      // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.
   }
   logout() {
       console.log("[ AuthService.logout()");
       this._af.auth.logout();
-      // this.isLoggedIn.next(false);
+      // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.      
   }
 
 // User creation ====================================================================
   signUpWithEmail(displayName:string, email:string, password:string){ 
-    console.log('>> Signing up new email user:'+email);
-    console.log('sign up params: '+displayName+', '+email+', '+password);
-    // TODO: Check for user in User db.
-      // if user present in db:
-      //   pull user data error
-      // else:
-      //  create user and set user.profile.needInfo to true
-    // Create new user object and update with keys for this provider.
-    let nuser = new User();          
-    nuser.auth.emailKey = 'email';
-    nuser.auth.userHasPicture = false;
-    nuser.profile.displayName = displayName;
-    nuser.profile.needInfo = true;
-    nuser.profile.userType = 'new';
+    console.log('>> AuthService: Signing up new email user:'+email);
+    console.log('...sign up params: '+displayName+', '+email+', '+password);     
  
     // Create User in Firebase User db
-    this._af.auth.createUser({ email: email, password: password });
-    this._hub._test.printo('returning nuser updated with auth keys',nuser);   
-    return nuser;
+    this._af.auth.createUser({ email: email, password: password })
+      .then(res => console.log('...success signing up new email user.  '+res))
+      .catch(err => {
+        console.log(err,'...error signing up new email user.  '+err);
+        this._hub._toast.toast(true, 'error', 'Error: '+err.name, err.message);
+        this._hub.setLoading(false);
+        });
   }
   
   // User update methods ==========================================================
   resetPassword() {
     console.log("[ AuthService.resetPassword()");
-    let reset = this.authstate.auth.sendEmailVerification();
-    reset.then(res => console.log(res));
-    console.dir(reset);
-  }
-  updateIsLoggedIn(user:User) {
-  // Update global isLoggedIn
-    console.log('[ AuthService.updateIsLoggedIn()');
-    let loggedIn = false;
-    if (user.auth.email.length < 1){ loggedIn = false;
-    } else { loggedIn = true;
-    }
-    this.isLoggedIn.next( loggedIn );
-  }
-// Testing methods ==============================================================
-  loginTester() {
-    console.log("[ AuthService testing method");
-    console.log("......isLoggedIn == " + this.isLoggedIn.value);
-    console.log("......logged in auth.auth :"+this.authstate.auth.displayName);
+    this._af.auth.getAuth().auth.sendEmailVerification()
+    .then(res=> (this._hub._test.printo('...reset succeeded',res)))
+    .catch(err=> (this._hub._test.printo('...reset faile',err.message)));
   }
   
-  // Getters
+  // Getters ======================================================================
+  getAuth() { return this.auth; }
 
-  // get isLoggedIn$() { return this.isLoggedIn.asObservable(); }
-  getIsLoggedIn$() { return this.isLoggedIn.asObservable(); }
-  getAuthstate() { return this.authstate; }
 } 
