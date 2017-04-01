@@ -7,7 +7,7 @@ import { HubService } from '../services/index';
 @Injectable() 
 export class AuthService {
   private auth: BehaviorSubject<any> = new BehaviorSubject('');
-
+// Constructor and all subscribtion ===========================================
   constructor (
     private _af: AngularFire, 
     public _hub: HubService
@@ -65,10 +65,10 @@ export class AuthService {
       // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.      
   }
 
-// User creation ====================================================================
-  signUpWithEmail(displayName:string, email:string, password:string){ 
+// User creation ==============================================================
+  signUpWithEmail(email:string, password:string){ 
     console.log('>> AuthService: Signing up new email user:'+email);
-    console.log('...sign up params: '+displayName+', '+email+', '+password);     
+    console.log('...sign up params: '+email+', '+password);     
  
     // Create User in Firebase User db
     this._af.auth.createUser({ email: email, password: password })
@@ -77,7 +77,8 @@ export class AuthService {
         console.log(err,'...error signing up new email user.  '+err);
         this._hub._toast.toast(true, 'error', 'Error: '+err.name, err.message);
         this._hub.setLoading(false);
-        });
+      });
+    // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.  
   }
   
   // User update methods ==========================================================
