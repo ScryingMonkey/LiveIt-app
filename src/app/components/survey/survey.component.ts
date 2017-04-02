@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { User, UserAuth, UserProfile } from '../../models/index';
 import { UserService, HubService } from '../../services/index';
+import { PrettyjsonPipe } from '../../pipes/index';
 
 @Component({
   selector: 'app-survey',
@@ -13,7 +14,7 @@ export class SurveyComponent implements OnInit {
   private empties:Array<string> = [];
 
   constructor(private _user:UserService) {
-    this._user.getUser$().subscribe((res:User) => {
+    this._user.getUserao$().subscribe((res:User) => {
       this.user = res;
       this.empties = this.checkUserForEmpties(this.user);
     });
@@ -23,8 +24,8 @@ export class SurveyComponent implements OnInit {
     user.profile.displayName;       
     for (var key in user.profile) {
       if (user.profile.hasOwnProperty(key)) {
-        var element = user.profile[key];
-        if (element.length < 1) { empties.push(key); }
+        var el = user.profile[key];
+        if (el.length < 1 || el == 0 || el == 'new') { empties.push(key); }
       }
     }
     return empties;

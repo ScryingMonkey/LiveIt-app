@@ -4,6 +4,8 @@ import { Observable} from 'rxjs/observable';
 import { BehaviorSubject } from "rxjs/Rx";
 import { HubService } from '../services/index';
 
+import { UserAuth } from '../models/index';
+
 @Injectable() 
 export class AuthService {
   private auth: BehaviorSubject<any> = new BehaviorSubject('');
@@ -16,8 +18,24 @@ export class AuthService {
     // subscribe to auth object
     this._af.auth.subscribe((res: FirebaseAuthState) => {
       console.log("[ AuthService.constructor._af.auth.subscription");
-      this.auth.next(res.auth);
-      this._hub._test.printo('...updating _auth.auth:',res.auth);
+      if (res) { 
+        console.log('...updating _auth.auth.email'+res.auth.email);
+        let auth = new UserAuth();
+        // auth.displayName = res.auth.displayName;
+        // auth.email = res.auth.email;
+        // auth.photoURL = res.auth.photoURL;
+        // auth.providerId = res.auth.providerId;
+        // auth.uid = res.auth.uid;
+        // auth.userHasPicture = res.auth.photoURL.length > 0;
+        auth.setValues( res.auth.displayName, res.auth.email,
+          res.auth.photoURL, res.auth.providerData, res.auth.uid);
+        this.auth.next(auth);
+        // this._hub._test.printo('...updating _auth.auth:',res.auth);
+      } else { 
+        console.log('..._af.auth is null.');        
+        this.logout(); 
+      }
+
     });
   }
 

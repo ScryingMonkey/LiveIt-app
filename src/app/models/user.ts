@@ -6,25 +6,22 @@ export class User {
     public key?: string
 
     constructor() { 
-        let newauth = new UserAuth();
-        let newprofile = new UserProfile();
-        this.setValues(newauth,newprofile);
-        this.key = this.convertKey(newauth.email);        
+        this.setValues(new UserAuth(), new UserProfile());
+        this.key = this.convertKey(new UserAuth().email);        
     }
-    newUser(auth:UserAuth):User {
-        return <User> {
-            auth: auth,
-            profile: new UserProfile().newUser(auth.displayName),
-            key: this.convertKey(auth.email)
-        }
+    newUser(auth:UserAuth):User {       
+        let nuser = new User();
+        nuser.setValues(auth, new UserProfile());
+        return nuser; 
     }
     setValues(auth:UserAuth, profile:UserProfile) {
         this.auth = auth;
         this.profile = profile;
-        this.key = this.convertKey(auth.email);                
+        this.key = this.convertKey(auth.email);   
+             
     }
     setKey(key:string){ this.key = key; }
-    convertKey(email:string){ return email.replace('@','at').replace('.','dot'); }
+    convertKey(email:string){ return email.replace('@','AT').replace('.','DOT'); }
     setAuth(auth:UserAuth) { 
         this.auth = auth; 
     }

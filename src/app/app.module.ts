@@ -9,6 +9,7 @@ import { AppComponent } from './app.component';
 import { CoachLandingComponent, MemberLandingComponent, LoginComponent, SurveyComponent } from './components/index';
 import { AuthService, TestService, HubService, UserService } from './services/index';
 import { NotificationsComponent, NotificationsService } from './components/notifications/index';
+import { PrettyjsonPipe } from './pipes/prettyjson.pipe';
 
 const appRoutes: Routes = [
   { path: 'member',
@@ -58,7 +59,8 @@ export const firebaseConfig = {
     MemberLandingComponent,
     CoachLandingComponent,
     NotificationsComponent,
-    SurveyComponent
+    SurveyComponent,
+    PrettyjsonPipe
     ],
   imports: [
     BrowserModule,

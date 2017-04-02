@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AngularFire, FirebaseListObservable, AngularFireAuth} from 'angularfire2';
-import { AuthService, TestService } from './services/index';
+import { UserService, AuthService, TestService } from './services/index';
 
 import { NotificationsComponent, NotificationsService } from './components/notifications/index';
 
@@ -16,12 +16,13 @@ export class AppComponent {
   constructor(
         private _af:AngularFire, 
         private _as:AuthService,
+        private _user:UserService,
         private _test:TestService,
         private _toast:NotificationsService
         ){
     this.items = _af.database.list('/');
   }
-  logout() { this._as.logout(); }
+  logout() { this._user.logout(); }
 }
 
 // TODO: 

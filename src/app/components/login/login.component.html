@@ -75,14 +75,13 @@
     <hr>
     <button id="btnTester" class="my_btn btn btn-secondary" (click)="loginTester()">Tester</button>
     <button id="btnTester" class="my_btn btn btn-secondary" (click)="logout()">Reset</button>
-    <div *ngIf="(_user.getIsLoggedIn$() | async)">
+    <div *ngIf="isLoggedIn">
         You are logged in.
         current user:  {{ userJson() }} 
     </div>
-    <div *ngIf="!(_user.getIsLoggedIn$() | async)">
+    <div *ngIf="!isLoggedIn">
         No user.  Not logged in.
     </div>   
-    isLoggedIn$ = {{ isLoggedIn }}<br>
     signingup = {{ signingup }}           
     <hr>
 </div>

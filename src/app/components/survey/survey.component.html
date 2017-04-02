@@ -3,3 +3,9 @@ survey works!
 <ul>Need data for:
   <li *ngFor="let empty of empties">{{ empty }}</li>
 </ul>
+<div>List of Users:
+    <div *ngFor="let user of (_user.userList | async)">
+      <h4>{{ user.profile.displayName }}</h4>
+      <h4>{{ user.profile | prettyjson }}</h4>
+    </div>
+</div>

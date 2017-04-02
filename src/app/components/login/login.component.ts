@@ -17,9 +17,9 @@ import { User } from '../../models/index';
 
 export class LoginComponent implements OnInit {  
   model:any = {  };
-  public isLoggedIn: boolean;
   public user: User;
   private signingup: boolean = false;
+  private isLoggedIn: boolean = false;
   
   private returnUrl: string;
   private listTitle: string;
@@ -32,16 +32,15 @@ export class LoginComponent implements OnInit {
     private _user: UserService,
     private route: ActivatedRoute ) {
     console.log('[ LoginComponent.constructor');
-    this._user.getIsLoggedIn$().subscribe(res => this.isLoggedIn = res);
-    this._user.getUser$().subscribe(res => this.user = res);
+    this._user.getUserao$().subscribe(res => {
+      this.user = res;
+      if (res.profile.userType == 'dummy') { this.isLoggedIn = false; 
+      } else { this.isLoggedIn == true; 
+      } });
   }
 
   ngOnInit() { 
     console.log('[ LoginComponent.ngOnInit');
-    if(this.isLoggedIn) {
-      console.log('...already logged in.  Redirecting...');
-      this.router.navigate( ['/loggedin'] );
-    }
     // get return url from route parameters or default to '/'
     // this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
   }
@@ -61,6 +60,5 @@ export class LoginComponent implements OnInit {
   loginWithGoogle() { this._hub.setLoading(true); this._user.loginWithGoogle(); }
   loginWithFacebook() { this._hub.setLoading(true);this._user.loginWithFacebook(); }
   logout() { this._hub.setLoading(false); this._user.logout(); }
-  loginTester() { this._user.loginTester(); }
   userJson() { return JSON.stringify(this.user); }
 }

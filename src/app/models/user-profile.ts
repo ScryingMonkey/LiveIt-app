@@ -9,20 +9,23 @@ export class UserProfile {
     constructor(){
         this.needInfo = true;
         this.displayName = 'Dummy User';
-        this.userType = 'new';
+        this.userType = 'dummy';
         this.userLevel = 0;
         this.isCoach = false;
         this.students = [];
     }
-    newUser(name):UserProfile {
-        return <UserProfile> {
-            needInfo: true,
-            displayName: name,
-            userType: 'new',
-            userLevel: 0,
-            isCoach: false,
-            students: []
-        }
+    newUserProfile(name:string):UserProfile {
+        let nprofile = new UserProfile();
+        nprofile.setValues(true,name,'new',0,false,[]);
+        return nprofile;
+        // return <UserProfile> {
+        //     needInfo: true,
+        //     displayName: name,
+        //     userType: 'new',
+        //     userLevel: 0,
+        //     isCoach: false,
+        //     students: []
+        // }
         // this.needInfo = true;
         // this.displayName = name;
         // this.userType = 'new';
