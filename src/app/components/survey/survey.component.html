@@ -3,9 +3,16 @@ survey works!
 <ul>Need data for:
   <li *ngFor="let empty of empties">{{ empty }}</li>
 </ul>
-<div>List of Users:
+<!--<div>List of Users:
     <div *ngFor="let user of (_user.userList | async)">
       <h4>{{ user.profile.displayName }}</h4>
       <h4>{{ user.profile | prettyjson }}</h4>
     </div>
-</div>
+</div>-->
+<!--<div class = "col-md-1"></div>-->
+  <div class = "col-md-offset-1 col-md-10"> 
+    <barrel-of-monkeys [hidden]="!showBom" [bom]="bom">
+      monkeys loading...
+    </barrel-of-monkeys>
+  </div>
+<!--<div class = "col-md-1"></div>-->

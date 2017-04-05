@@ -1,0 +1,39 @@
+<br><br>
+<div class="form-group">
+    <form action="#" method="post">
+        <hr>
+        {{ monkey.blurb }}
+        <div class="form-group">
+            <label for="response">Responses</label>
+            <select class="form-control" 
+                    id="responses" 
+                    [(ngModel)]="monkey.responses[0]"
+                    name="responses" >
+                <option *ngFor="let o of monkey.options" [value]="o">{{o}}</option>
+            </select>
+        </div>
+        <br>
+        <button (click)="monkeyClicked()" class="btn btn-info">{{ monkey.submit }}</button>
+        <hr>
+    </form>
+    <div *ngIf="_test.testing | async" >
+        <br>
+        <hr>
+        currentMonkey!
+        {{ testingMonkey }}
+        <hr>
+    </div>
+</div>
+<br><br>
+
+
+    <!--
+    key: string, // How the monkey is summoned from the barrel
+	blurb: string, // What the monkey says.  Ususally a 1-2 sentence solicitation.
+	optionType: string, // What kind of responses the monkey offers
+	options: Array<string>,  // The responses the monkey offers
+    leader?: string // Key of the monkey that called this monkey out of the barrel.  If null this is the first monkey.
+	followers: Array<string>, // The monkey or monkeys that comes after this monkey.  If null, you are done!
+    submit: string,  // label of the submit button
+    hat: string // A general description of the monkey's head covering (all monkeys wear hats).
+    -->

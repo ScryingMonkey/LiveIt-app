@@ -10,6 +10,7 @@ import { CoachLandingComponent, MemberLandingComponent, LoginComponent, SurveyCo
 import { AuthService, TestService, HubService, UserService } from './services/index';
 import { NotificationsComponent, NotificationsService } from './components/notifications/index';
 import { PrettyjsonPipe } from './pipes/prettyjson.pipe';
+import { BarrelOfMonkeysComponent, MonkeyskinComponent, BarrelOfMonkeysService } from './components/barrelofmonkeys/index';
 
 const appRoutes: Routes = [
   { path: 'member',
@@ -60,7 +61,9 @@ export const firebaseConfig = {
     CoachLandingComponent,
     NotificationsComponent,
     SurveyComponent,
-    PrettyjsonPipe
+    PrettyjsonPipe,
+    BarrelOfMonkeysComponent,
+    MonkeyskinComponent
     ],
   imports: [
     BrowserModule,
@@ -76,7 +79,8 @@ export const firebaseConfig = {
     TestService, 
     HubService, 
     UserService,
-    NotificationsService
+    NotificationsService,
+    BarrelOfMonkeysService
     ],
   bootstrap: [AppComponent]
 })

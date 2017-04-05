@@ -118,7 +118,7 @@ export class UserService {
   routeToLandingPage(user:User){
     // let user = this.user.getValue();
     console.log('[ UserService.routeToLandingPage()...'+user.profile.userType); 
-    this._hub._test.printo('...user.profile',user.profile);      
+    this._hub._test.printo('...user',user);      
     let routePath:string = '';
     if (user.profile.userType == 'dummy') {
       routePath = 'survey';
