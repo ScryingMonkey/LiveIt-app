@@ -1,6 +1,6 @@
-export * from './test.service';
-export * from '../components/barrelofmonkeys/barrelofmonkeys.service';
-export * from './hub.service';
-export * from './auth.service';
-export * from './user.service';
-
+export { TestService } from './test.service';
+export { NotificationsService } from '../components/notifications/index';
+export { BarrelOfMonkeysService } from '../components/barrelofmonkeys/index';
+export { AuthService } from './auth.service';
+export { UserService } from './user.service';
+export { HubService } from './hub.service';

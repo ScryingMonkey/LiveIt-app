@@ -13,16 +13,18 @@ import { TestService } from '../../../services/index';
 export class MonkeyskinComponent implements OnInit {
     @Input() monkey: Monkey;
     private testing:boolean;
+    private optionHtml: string;
 
     constructor(private _bomService: BarrelOfMonkeysService, private _test:TestService ) { 
         console.log('[ MonkeySkinComponent.constructor...');
-        console.log(this._bomService.testState());
+        // console.log(this._bomService.testState());
         this.testing = false;
+
     }
 
     ngOnInit() { 
         console.log('[ MonkeySkinComponent.ngOnInit...');
-        this._bomService.testState();
+        // this._bomService.testState();        
         // set options on the displayed monkey to the monkeys left in the barrel
         // let options = [];
         // for(let m of this._bomService.monkeysInTheBarrel) {
@@ -56,6 +58,5 @@ export class MonkeyskinComponent implements OnInit {
     }
 
     // TODO: For testing.  Remove when working.
-    getTestingMonkey() { return JSON.stringify(this.monkey); }
-    
+    getTestingMonkey() { return JSON.stringify(this.monkey); }    
 }

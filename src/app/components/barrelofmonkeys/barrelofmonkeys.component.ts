@@ -28,6 +28,9 @@ export class BarrelOfMonkeysComponent implements OnInit {
         console.log('[ BarrelOfMonkeysComponent.ngOnInit()...');
         console.log('...bom :');
         console.dir(this.bom);
+        console.log('........testing state ');
+        this._bom.testState;
+        console.log('........ending state test');
 
         if(this.bom != null) {
             this._bom.importBOM( this.bom );            

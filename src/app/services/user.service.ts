@@ -5,7 +5,7 @@ import { BehaviorSubject } from "rxjs/Rx";
 import { Subject } from 'rxjs/Subject';
 
 import { User, UserAuth, UserProfile } from '../models/index';
-import { AuthService, HubService } from './index';
+import { AuthService, TestService } from './index';
 
 
 @Injectable()
@@ -22,7 +22,7 @@ export class UserService {
   constructor( 
     private _af: AngularFire,
     private router: Router,
-    private _hub: HubService,
+    private _test:TestService,
     private _auth: AuthService
     ){
     console.log('[ UserService.constructor()');
@@ -30,10 +30,10 @@ export class UserService {
     console.log('>> this.fbuserref: '+this.userref);       
     
     _auth.getAuth().subscribe( (auth) => {
-      this._hub._test.printo('...auth updated',auth);
+      this._test.printo('...auth updated',auth);
       if (auth.email) { 
         console.log('...res !null.  res.email'+auth.email);
-        // this.setUserAuth(res);  // updates user when _auth.auth updates
+        this.setUserAuth(auth);  // updates user when _auth.auth updates
         this.userKey.next(new User().convertKey(auth.email));
         console.log('>> updated userKey: '+new User().convertKey(auth.email));
         // this.createUserinDB(res);
@@ -50,7 +50,7 @@ export class UserService {
             this.userfbo.take(1).toPromise()
             .then(res => {
               console.log('...routing to landing page.')
-              this._hub._test.printo('returned res from db', res);
+              this._test.printo('returned res from db', res);
               this.routeToLandingPage(res);
             })
             .catch(err => console.log('...cannot route to landing page: '+err));
@@ -58,7 +58,7 @@ export class UserService {
           } else {
             console.log('...did not find '+k+' in list');
 
-            this.createUserinDB(auth);
+            this.createUserInDB(auth);
           }
         }).catch( err => console.log('Error: '+err));
 
@@ -78,12 +78,12 @@ export class UserService {
   }
   setupSubs(auth) {
     this.userListfbo.subscribe(res => {
-      this._hub._test.printo('>> userListfbo bound', res);
+      this._test.printo('>> userListfbo bound', res);
       this.userList.next(res);
     });
 
     this.userfbo.subscribe(res => {
-      this._hub._test.printo('>> userfbo bound: ', res);
+      this._test.printo('>> userfbo bound: ', res);
     });
 
     this.user.subscribe( res => console.log('>> user updated') );
@@ -91,24 +91,29 @@ export class UserService {
 
 // Helper Methods ===========================================================
 
-  createUserinDB(auth:UserAuth) {
-    // Need to be logged in before creating user
-    console.log('[ UserService.createUserinDB()');   
-    let nuser = new User().newUser(auth);
-    this._af.database.object('/users/'+nuser.key).set( {key:nuser.key} ); 
-    this._af.database.object('/users/'+nuser.key+'/auth').set( auth );         
-    this._af.database.object('/users/'+nuser.key+'/profile').set( nuser.profile )
-      .then(res => {
-        this.userKey.next(nuser.key);
-        this.user.next(nuser);
-        console.log('success for '+nuser+', '+res);
-        this.routeToLandingPage(nuser);
+  upateUserInDB(user:User){
+    console.log('[ UserService.upateUserInDB()');   
+    user.key = user.convertKey(user.auth.email);
+    this._af.database.object('/users/'+user.key).set( {key:user.key} ); 
+    this._af.database.object('/users/'+user.key+'/auth').set( user.auth );         
+    this._af.database.object('/users/'+user.key+'/profile').set( user.profile )
+      .then( v => {
+        this.userKey.next(user.key);
+        this.user.next(user);
+        console.log('success for '+user);
+        this.routeToLandingPage(user);
       })
       .catch(err => console.log(err,'Error: '+err.message));
   }
+  createUserInDB(auth:UserAuth) {
+    // Need to be logged in before creating user
+    console.log('[ UserService.createUserinDB()');   
+    let nuser = new User().newUser(auth);
+    this.upateUserInDB(nuser);
+  }
   isUserInList(key, userList){ // check list of users for key.  If not found return false.
     console.log('[ UserService.isUSerinList('+key+', userList)');
-    this._hub._test.printo('...userList in isUserInList',userList);
+    this._test.printo('...userList in isUserInList',userList);
     for (let n = 0; n < userList.length; n++) {
       // console.log('...comparing '+key+' to '+userList[n].key)
       if (userList[n].key == key) { return true; }
@@ -118,7 +123,7 @@ export class UserService {
   routeToLandingPage(user:User){
     // let user = this.user.getValue();
     console.log('[ UserService.routeToLandingPage()...'+user.profile.userType); 
-    this._hub._test.printo('...user',user);      
+    this._test.printo('...user',user);      
     let routePath:string = '';
     if (user.profile.userType == 'dummy') {
       routePath = 'survey';
@@ -166,15 +171,18 @@ export class UserService {
   setUser(user:User) { this.user.next(user); }
   getUserAuth():UserAuth { return this.user.getValue().auth; }
   setUserAuth(auth:UserAuth) { 
-    let user = this.getUser();
+    let user = this.user.getValue();
     user.auth = auth;
     this.user.next(user);
+    this.upateUserInDB(user);
   }
   getUserProfile():UserProfile { return this.user.getValue().profile; }
   setUserProfile(profile:UserProfile) { 
-    let user = this.getUser();
+    let user = this.user.getValue();
+    this._test.printo('...user in setUserProfile',user);
     user.profile = profile;
     this.user.next(user);
+    this.upateUserInDB(user);
   }
   getUserListo() { return this.userListfbo; }
 

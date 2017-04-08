@@ -27,7 +27,7 @@ export class SurveyComponent implements OnInit {
                 { key:'displayName', 
                   image:'elephant', 
                   blurb:'Hi!  What is your name?', 
-                  optionType:'dropdown', 
+                  optionType:'textinput', 
                   options:['put a textbox here instead'], 
                   followers:['userType'], 
                   submit:'Next', 
@@ -37,14 +37,14 @@ export class SurveyComponent implements OnInit {
                   blurb:'Are you a coach or a member?', 
                   optionType:'dropdown', 
                   options:['Coach', 'Member'], 
-                  followers:['otherThings'], 
+                  followers:['userLevel'], 
                   submit:'Next', 
                   hat:'Yellow Boiler' },
-                { key:'otherThings', 
+                { key:'userLevel', 
                   image:'elephant', 
-                  blurb:'What are some other things about you?', 
-                  optionType:'dropdown', 
-                  options:['I like ducks','I want to be an astronaut', 'Pistacio is the best kind of icecream'], 
+                  blurb:'What is your level?', 
+                  optionType:'radio', 
+                  options:['1','2','3','4'], 
                   followers:[], 
                   submit:'Submit', 
                   hat:'Blue Trucker Hat' }
@@ -64,5 +64,6 @@ export class SurveyComponent implements OnInit {
 
   ngOnInit() {
   }
+
 
 }

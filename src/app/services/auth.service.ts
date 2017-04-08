@@ -9,10 +9,11 @@ import { UserAuth } from '../models/index';
 @Injectable() 
 export class AuthService {
   private auth: BehaviorSubject<any> = new BehaviorSubject('');
+  private error: BehaviorSubject<Error> = new BehaviorSubject(null);
+
 // Constructor and all subscribtion ===========================================
   constructor (
-    private _af: AngularFire, 
-    public _hub: HubService
+    private _af: AngularFire
     ){
     console.log('[ AuthService.constructor()');
     // subscribe to auth object
@@ -30,7 +31,6 @@ export class AuthService {
         auth.setValues( res.auth.displayName, res.auth.email,
           res.auth.photoURL, res.auth.providerData, res.auth.uid);
         this.auth.next(auth);
-        // this._hub._test.printo('...updating _auth.auth:',res.auth);
       } else { 
         console.log('..._af.auth is null.');        
         this.logout(); 
@@ -45,11 +45,13 @@ export class AuthService {
       this._af.auth.login(
             { email: email, password: password, },
             { provider: AuthProviders.Password, method: AuthMethods.Password, } )
-          .then(res => console.log('...success for '+email+', '+res))
+          .then(res => {
+            console.log('...success for '+email+', '+res);
+            this.error.next(null);
+          } )
           .catch(err => {
             console.log(err,'...error for '+email+', '+err);
-            this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
-            this._hub.setLoading(false);
+            this.error.next(err);
           });
       // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.
   }
@@ -57,11 +59,13 @@ export class AuthService {
       console.log("[ AuthService: Signing in with Facebook");    
       this._af.auth.login(
             { provider: AuthProviders.Facebook, method: AuthMethods.Popup, })
-          .then(res => console.log('...success for Facebook login.  '+res))
-          .catch(err => {
+          .then(res => {
+            console.log('...success for Facebook login.  '+res);
+            this.error.next(null);
+      } )
+          .catch(err => { 
             console.log(err,'...error for Facebook login.  '+err);
-            this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
-            this._hub.setLoading(false);
+            this.error.next(err);
             });
       // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.    
   }
@@ -69,11 +73,13 @@ export class AuthService {
       console.log("[ AuthService: Signing in with Google");        
       this._af.auth.login(
             { provider: AuthProviders.Google, method: AuthMethods.Popup, })
-          .then(res => console.log('...success for Facebook login.  '+res))
+          .then(res => {
+            console.log('...success for Facebook login.  '+res);
+            this.error.next(null);
+      } )
           .catch(err => {
             console.log(err,'...error for Facebook login.  '+err);
-            this._hub._toast.toast(true, 'error', 'Error', 'Wrong password.');
-            this._hub.setLoading(false);
+            this.error.next(err);
             });
       // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.
   }
@@ -90,12 +96,14 @@ export class AuthService {
  
     // Create User in Firebase User db
     this._af.auth.createUser({ email: email, password: password })
-      .then(res => console.log('...success signing up new email user.  '+res))
-      .catch(err => {
-        console.log(err,'...error signing up new email user.  '+err);
-        this._hub._toast.toast(true, 'error', 'Error: '+err.name, err.message);
-        this._hub.setLoading(false);
-      });
+      .then(res => {
+        console.log('...success signing up new email user.  '+res);
+        this.error.next(null);
+      } )
+      .catch(err => { 
+        console.log(err,'...error creating user from email.  '+err);
+        this.error.next(err); 
+      } );
     // Firebase updates _af.auth, which updates _auth.auth, which triggers _user subscription.  
   }
   
@@ -103,11 +111,12 @@ export class AuthService {
   resetPassword() {
     console.log("[ AuthService.resetPassword()");
     this._af.auth.getAuth().auth.sendEmailVerification()
-    .then(res=> (this._hub._test.printo('...reset succeeded',res)))
-    .catch(err=> (this._hub._test.printo('...reset faile',err.message)));
+    .then(res=> console.log('...reset succeeded',res))
+    .catch(err=> console.log('...reset failed',err.message));
   }
   
   // Getters ======================================================================
   getAuth() { return this.auth; }
+  getErrorao$() { return this.error.asObservable(); }
 
 } 

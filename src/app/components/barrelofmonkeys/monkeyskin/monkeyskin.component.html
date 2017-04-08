@@ -4,13 +4,24 @@
         <hr>
         {{ monkey.blurb }}
         <div class="form-group">
-            <label for="response">Responses</label>
-            <select class="form-control" 
-                    id="responses" 
-                    [(ngModel)]="monkey.responses[0]"
-                    name="responses" >
-                <option *ngFor="let o of monkey.options" [value]="o">{{o}}</option>
+            <label for="response"><h4>Responses : {{ monkey.optionType }}</h4></label>
+                    
+            <input *ngIf='monkey.optionType == "textinput"' type='text' placeholder='name' 
+                    class='form-control' id='text_response' [(ngModel)]='monkey.responses[0]' 
+                    name='text_response'>
+
+            <select *ngIf='monkey.optionType == "dropdown"' class='form-control' 
+                    id='drop_responses' [(ngModel)]='monkey.responses[0]' name='drop_responses' >
+                <option *ngFor='let o of monkey.options' [value]='o'>{{o}}</option>
             </select>
+            
+            <div *ngIf='monkey.optionType == "radio"'>
+                <div *ngFor='let o of monkey.options'>
+                    <input type='radio' id='radio_responses' name='radio_responses' 
+                        [(ngModel)]='monkey.responses[0]' [value]='o'> {{o}}<br>
+                </div>
+            </div>
+
         </div>
         <br>
         <button (click)="monkeyClicked()" class="btn btn-info">{{ monkey.submit }}</button>
@@ -19,8 +30,17 @@
     <div *ngIf="_test.testing | async" >
         <br>
         <hr>
-        currentMonkey!
-        {{ testingMonkey }}
+        <h5>
+            <p>
+            currentMonkey!<br>
+            {{ getTestingMonkey() }}
+            <br>
+            </p>
+            <p>
+            Barrel of monkeys<br>
+            {{ this._bomService.testJBom() }}
+            </p>
+        </h5>
         <hr>
     </div>
 </div>

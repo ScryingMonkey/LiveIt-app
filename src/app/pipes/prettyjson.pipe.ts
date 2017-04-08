@@ -8,7 +8,7 @@ export class PrettyjsonPipe implements PipeTransform {
   transform(val) {
       return JSON.stringify(val, null, 2)
       .replace(' ', ' ')
-      .replace('\n', '\n');
+      // .replace('\n', '<br>');
   }
 
 }

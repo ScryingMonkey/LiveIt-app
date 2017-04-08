@@ -1,4 +1,4 @@
-export * from './barrelofmonkeys.service';
-export * from './barrelofmonkeys.component';
-export * from './monkeyskin/monkeyskin.component';
-export * from './monkey.interface';
+export { BarrelOfMonkeysService } from './barrelofmonkeys.service';
+export { BarrelOfMonkeysComponent } from './barrelofmonkeys.component';
+export { MonkeyskinComponent } from './monkeyskin/monkeyskin.component';
+export { Monkey } from './monkey.interface';

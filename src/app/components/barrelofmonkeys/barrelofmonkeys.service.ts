@@ -8,6 +8,8 @@ import { Router }   from '@angular/router';
 import { Monkey } from './monkey.interface';
 import { HubService } from '../../services/index';
 
+import {PrettyjsonPipe} from '../../pipes/index';
+
 
 @Injectable()
 export class BarrelOfMonkeysService {
@@ -18,6 +20,7 @@ export class BarrelOfMonkeysService {
 	private currentMonkey : BehaviorSubject<Monkey> = new BehaviorSubject(this.makeDummyMonkey());
 	private monkeyReport : BehaviorSubject<Array<string>> = new BehaviorSubject(Array());
     private showBom : BehaviorSubject<boolean> = new BehaviorSubject(false);
+    private finalMonkeyReport : Array<Monkey> = null;
 	
 // Constructor ===================================================================================
     constructor() {     }
@@ -35,7 +38,7 @@ export class BarrelOfMonkeysService {
     }
     pullNextMonkey() {
         console.log('[ BarrelOfMonkeysService.pullNextMonkey()');
-        this.testState();
+        // this.testState();
         // send currentMonkey to monkeysOutOfTheBarrel
         if (this.currentMonkey.value) {
             console.log('...sending '+this.currentMonkey.value.key+' to monkeysOutOfTheBarrel.');
@@ -47,28 +50,28 @@ export class BarrelOfMonkeysService {
             console.log('...pulling monkeysInWaiting[0]');
             console.log(this.monkeysInWaiting[0]);
             this.updateCurrentMonkey(this.monkeysInWaiting.shift());
-            this.testState();        
+            // this.testState();        
         } else {
             console.log('...out of monkeys!');
             this.outOfMonkeys();
-            this.testState(); 
+            // this.testState(); 
         }
     }
     updateCurrentMonkey(monkey:Monkey) {
         // if there is a currentMonkey, adds currentMonkey to monkeysOutOfTheBarrel
         // makes input the currentMonkey
         console.log('[ BarrelOfMonkeysService.updateCurrentMonkey()');
-        this.testState(); 
+        // this.testState(); 
         if (monkey) {
             monkey.leader = this.currentMonkey.value.key;  // tracked to facilitate a back button
             console.log('...'+this.currentMonkey.value.key+' is out of the barrel');           
             this.currentMonkey.next(monkey);
             this.currentMonkey.value.responses = [];
             console.log('...'+monkey.key+' is the next monkey');
-            this.testState(); 
+            // this.testState(); 
         } else {
             console.log('...this is the first monkey! : '+monkey.key);
-            this.testState(); 
+            // this.testState(); 
         }
     }
     updateMonkeysInWaiting(followers:Array<string>) {        
@@ -100,7 +103,7 @@ export class BarrelOfMonkeysService {
             }
             // this.monkeysInWaiting.concat(patientMonkeys);  //Not working for some reason
             console.log('...monkeysInWaiting updated');
-            this.testState(); 
+            // this.testState(); 
             return true;
         }
     }
@@ -123,9 +126,12 @@ export class BarrelOfMonkeysService {
         // cue app to stop showing barrel of monkyes
         this.showBom.next(false);
         // send results of all monkeys out of the barrel to OrderService
+        console.log('[ _bom.outOfMonkeys() ...final monkey report: ]');
         console.dir(this.makeMonkeyReport());
+        this.finalMonkeyReport = this.makeMonkeyReport();
         this.showBom.next(false);
         this.monkeyReport.complete();
+
     }
     recordCurrentMonkeyAnswers(responses:Array<string>) {
         console.log('[ BarrelOfMonkeysService.recordCurrentMonkeyAnswers()');        
@@ -139,7 +145,7 @@ export class BarrelOfMonkeysService {
         console.log('[ BarrelOfMonkeysService.importBOM()');
         console.log('...monkeyRoster');
         console.dir(monkeyRoster);
-        this.testState(); 
+        // this.testState(); 
         // monkeyRoster = this.getDummyBOM();  testing.  provides dummy data
         for (let monkey of monkeyRoster) {
             //TODO: Rewrite to parse monkey from JSON
@@ -153,7 +159,7 @@ export class BarrelOfMonkeysService {
         // move fist monkey in monkeysInWaiting to currentMonkey
         this.pullNextMonkey();
         // print state to console
-        this.testState(); 
+        // this.testState(); 
     }
     findMonkey(key:string, barrel:Array<Monkey>) {
         console.log('[ BarrelOfMonkeysService.findMonkey('+key+')');     
@@ -172,7 +178,7 @@ export class BarrelOfMonkeysService {
     makeMonkeyReport() {
         let report = [];
         for (let m of this.monkeysOutOfTheBarrel) {
-            report.push(m.responses.toString());
+            report.push(m); //.responses.toString());
         }
         return report;
     }
@@ -233,6 +239,7 @@ export class BarrelOfMonkeysService {
     getCurrentMonkey$() { return this.currentMonkey.asObservable(); }
     getMonkeyReport$() { return this.monkeyReport.asObservable(); }
     getShowBom$() { return this.showBom.asObservable(); }
+    getFinalMonkeyReport() { return this.finalMonkeyReport; }
 
 
 //Tests ==========================================================================================
@@ -244,5 +251,37 @@ export class BarrelOfMonkeysService {
         console.dir(this.monkeysInTheBarrel);
         console.dir(this.monkeysOutOfTheBarrel);
         console.log('...end of test]');
+    }
+    testBom() {
+        let cm = JSON.stringify(this.currentMonkey.value);
+        let miw = JSON.stringify(this.monkeysInWaiting);
+        let mib = JSON.stringify(this.monkeysInTheBarrel);
+        let mob = JSON.stringify(this.monkeysOutOfTheBarrel);
+
+        let jmonkey = {
+                currentMonkey: this.currentMonkey.getValue(),
+                monkeysInWaiting:this.monkeysInWaiting,
+                monkeysInTheBarrel:this.monkeysInTheBarrel,
+                monkeysOutOfTheBarrel:this.monkeysOutOfTheBarrel
+                       } ;
+        return jmonkey;
+    }
+    testJBom() {
+        let cm = JSON.stringify(this.currentMonkey.value);
+        let miw = JSON.stringify(this.monkeysInWaiting);
+        let mib = JSON.stringify(this.monkeysInTheBarrel);
+        let mob = JSON.stringify(this.monkeysOutOfTheBarrel);
+
+        let jmonkey = {
+                currentMonkey: this.currentMonkey.getValue(),
+                monkeysInWaiting:this.monkeysInWaiting,
+                monkeysInTheBarrel:this.monkeysInTheBarrel,
+                monkeysOutOfTheBarrel:this.monkeysOutOfTheBarrel
+                       } ;
+        return JSON.stringify(jmonkey)
+                            .replace(' ', ' ')
+                            .replace('\n', '<br>')
+                            .replace(',', ',<br>')
+                            .replace('}', '}<br>');
     }
 }
