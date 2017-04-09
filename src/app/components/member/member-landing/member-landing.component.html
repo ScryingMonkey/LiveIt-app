@@ -1,3 +1,14 @@
 <p>
   member-landing works!
 </p>
+
+<ul>
+<li *ngFor="let u of userProfileKeys">u {{ u }} : user[u] {{ user[u] }}</li>
+</ul>
+<!--<ul>Need data for:
+  <li *ngFor="let empty of empties">{{ empty }}</li>
+</ul>-->
+
+<div *ngIf="_hub._test.testing | async">
+  {{ _hub._user.testJUser() }}
+</div>

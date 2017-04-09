@@ -27,20 +27,22 @@ export class UserService {
     ){
     console.log('[ UserService.constructor()');
 
-    console.log('>> this.fbuserref: '+this.userref);       
-    
+    console.log('>> this.fbuserref: '+this.userref);   
     _auth.getAuth().subscribe( (auth) => {
       this._test.printo('...auth updated',auth);
       if (auth.email) { 
         console.log('...res !null.  res.email'+auth.email);
+        let userKey = new User().convertKey(auth.email);        
+        this.userKey.next(userKey);
         this.setUserAuth(auth);  // updates user when _auth.auth updates
-        this.userKey.next(new User().convertKey(auth.email));
         console.log('>> updated userKey: '+new User().convertKey(auth.email));
-        // this.createUserinDB(res);
+        // this.userfbo.take(1).toPromise().then((res:User) => {
+        //   this._test.printo('>> userfbo retrieved from db', res);
+        //   this.user.next(res);
+        // }).catch((err:Error) => console.log('>>Error pulling user from db: '+err.message));
         this.setupFbos();
         this.setupSubs(auth);
 
-        
         this.userListfbo.take(1).toPromise()
         .then( res => {
           let k = this.userKey.getValue();
@@ -62,6 +64,7 @@ export class UserService {
           }
         }).catch( err => console.log('Error: '+err));
 
+        this.updateUserAuthInDB(userKey, auth);
       } else {
         console.log('...res null.  res.email'+auth.email);
         this.router.navigate( ['/login'] );  // if no _auth.auth object, route to login page
@@ -84,26 +87,32 @@ export class UserService {
 
     this.userfbo.subscribe(res => {
       this._test.printo('>> userfbo bound: ', res);
+      this.user.next(res);
     });
 
     this.user.subscribe( res => console.log('>> user updated') );
   }
 
-// Helper Methods ===========================================================
-
+// DB Update Methods ===========================================================
+  updateUserAuthInDB(userKey:String, auth:UserAuth){
+    console.log('[ UserService.updateUserAuthInDB()');       
+    this._af.database.object('/users/'+userKey+'/auth').set( auth )
+      .then( v => console.log('>> successfully updated auth for '+auth.email))
+      .catch(err => console.log(err,'>> Error: '+err.message));
+  }
+  updateUserProfileInDB(userKey:String, profile:UserProfile){
+    console.log('[ UserService.updateUserProfileInDB()');       
+    this._af.database.object('/users/'+userKey+'/profile').set( profile )
+      .then( v => console.log('>> successfully updated profile for '+profile.displayName))
+      .catch(err => console.log(err,'Error: '+err.message));
+  }
   upateUserInDB(user:User){
     console.log('[ UserService.upateUserInDB()');   
-    user.key = user.convertKey(user.auth.email);
+    let userKey = user.convertKey(user.auth.email);
+    user.key = userKey;
     this._af.database.object('/users/'+user.key).set( {key:user.key} ); 
-    this._af.database.object('/users/'+user.key+'/auth').set( user.auth );         
-    this._af.database.object('/users/'+user.key+'/profile').set( user.profile )
-      .then( v => {
-        this.userKey.next(user.key);
-        this.user.next(user);
-        console.log('success for '+user);
-        this.routeToLandingPage(user);
-      })
-      .catch(err => console.log(err,'Error: '+err.message));
+    this.updateUserAuthInDB(userKey, user.auth);
+    this.updateUserProfileInDB(userKey, user.profile);
   }
   createUserInDB(auth:UserAuth) {
     // Need to be logged in before creating user
@@ -111,6 +120,8 @@ export class UserService {
     let nuser = new User().newUser(auth);
     this.upateUserInDB(nuser);
   }
+
+// Helper Methods ===========================================================
   isUserInList(key, userList){ // check list of users for key.  If not found return false.
     console.log('[ UserService.isUSerinList('+key+', userList)');
     this._test.printo('...userList in isUserInList',userList);
@@ -131,10 +142,11 @@ export class UserService {
     } else if (user.profile.needInfo || user.profile.userType == 'new') { 
       routePath = 'survey'; 
     } else { 
-      routePath = ''+user.profile.userType;//+'/'v+this.user.getValue().uid;
+      routePath = ''+user.profile.userType.toLowerCase();//+'/'v+this.user.getValue().uid;
     }
     this.router.navigate( [routePath] );
   }
+
 // Logins, Logouts and Sign ups =============================================
 
   signUpWithEmail(displayName:string, email:string, password:string){ 
@@ -172,18 +184,29 @@ export class UserService {
   getUserAuth():UserAuth { return this.user.getValue().auth; }
   setUserAuth(auth:UserAuth) { 
     let user = this.user.getValue();
-    user.auth = auth;
-    this.user.next(user);
-    this.upateUserInDB(user);
+    // user.auth = auth;
+    // this.user.next(user);
+    console.log('>> updating user auth')
+    this.updateUserAuthInDB(user.key, auth);
   }
   getUserProfile():UserProfile { return this.user.getValue().profile; }
   setUserProfile(profile:UserProfile) { 
     let user = this.user.getValue();
-    this._test.printo('...user in setUserProfile',user);
-    user.profile = profile;
-    this.user.next(user);
-    this.upateUserInDB(user);
+    // user.profile = profile;
+    // this.user.next(user);
+    console.log('>> updating user profile')
+    this.updateUserProfileInDB(user.key, profile);    
   }
   getUserListo() { return this.userListfbo; }
+
+// Test methods ===============================================================
+  testJUser() {
+    // let user = JSON.stringify(this.user.getValue());
+    return JSON.stringify(this.user.getValue())
+                        .replace(' ', ' ')
+                        .replace('\n', '<br>')
+                        .replace(',', ',<br>')
+                        .replace('}', '}<br>');
+    }
 
 }
