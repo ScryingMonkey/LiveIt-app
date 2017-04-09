@@ -9,9 +9,9 @@ import { User, UserProfile } from '../../../models/index';
   styleUrls: ['./member-landing.component.css']
 })
 export class MemberLandingComponent implements OnInit {
-  private user:User = null;
-  private userData: Array<any> = null;
-  private userProfileKeys: Array<string> = null;
+  private user:User;
+  private userData: Array<any>;
+  private userProfileKeys: Array<string>;
 
   constructor( private _hub:HubService ) { 
     this.user = this._hub._user.getUser();
@@ -37,7 +37,11 @@ export class MemberLandingComponent implements OnInit {
     }
   }
   updateUserProfileKeys(profile:UserProfile){
-    Object.keys(profile).forEach( el => this.userProfileKeys.push(el.replace('u ','')));
-    console.log('>> updated userProfileKeys :'+this.userProfileKeys);
+    let l = [];
+    Object.keys(profile).forEach( el => l.push(el.replace('u ','')));
+    String.fromCharCode()
+    console.log('>> updated userProfileKeys :'+l);
+    console.dir(l);
+    this.userProfileKeys = l;
   }
 }
