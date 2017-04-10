@@ -4,7 +4,7 @@
         <hr>
         {{ monkey.blurb }}
         <div class="form-group">
-            <label for="response"><h4>Responses : {{ monkey.optionType }}</h4></label>
+            <label for="response" style='color:darkgray'><h6>{{ monkey.optionType }}</h6></label>
                     
             <input *ngIf='monkey.optionType == "textinput"' type='text' placeholder='name' 
                     class='form-control' id='text_response' [(ngModel)]='monkey.responses[0]' 

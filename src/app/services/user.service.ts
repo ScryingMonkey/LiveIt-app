@@ -17,6 +17,7 @@ export class UserService {
   private userList: BehaviorSubject<Array<any>> = new BehaviorSubject(new Array());
   private userfbo: FirebaseObjectObservable<any>;
   private queryUserByKeyfbo: FirebaseListObservable<any>;
+  private displayName:string;
 
 // Constructor and all subscriptions ===============================================
   constructor( 
@@ -118,7 +119,9 @@ export class UserService {
     // Need to be logged in before creating user
     console.log('[ UserService.createUserinDB()');   
     let nuser = new User().newUser(auth);
+    nuser.profile.displayName = this.displayName;
     this.upateUserInDB(nuser);
+    this.routeToLandingPage(nuser);
   }
 
 // Helper Methods ===========================================================
@@ -150,8 +153,9 @@ export class UserService {
 // Logins, Logouts and Sign ups =============================================
 
   signUpWithEmail(displayName:string, email:string, password:string){ 
-    console.log('[ UserService.signUpWithEmail('+displayName+', '+email+', '+password+')');    
+    console.log('[ UserService.signUpWithEmail('+displayName+', '+email+', '+password+')'); 
     this._auth.signUpWithEmail(email, password);
+    this.displayName = displayName;
   }
   loginWithEmail(email, password) { 
     console.log('[ UserService.loginWithEmail('+email+', '+password+')');        
@@ -201,12 +205,11 @@ export class UserService {
 
 // Test methods ===============================================================
   testJUser() {
-    // let user = JSON.stringify(this.user.getValue());
-    return JSON.stringify(this.user.getValue())
-                        .replace(' ', ' ')
-                        .replace('\n', '<br>')
-                        .replace(',', ',<br>')
-                        .replace('}', '}<br>');
+    let user = JSON.stringify(this.user.getValue());
+    user = user.replace(/,/gi, ', ')
+          .replace(/},/gi, '},                  ')
+          .replace(/] ,/gi, '], ');
+    return user;
     }
 
 }

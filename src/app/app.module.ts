@@ -11,6 +11,7 @@ import { AuthService, TestService, HubService, UserService } from './services/in
 import { NotificationsComponent, NotificationsService } from './components/notifications/index';
 import { PrettyjsonPipe } from './pipes/prettyjson.pipe';
 import { BarrelOfMonkeysComponent, MonkeyskinComponent, BarrelOfMonkeysService } from './components/barrelofmonkeys/index';
+import { TestingComponent } from './components/testing/testing.component';
 
 const appRoutes: Routes = [
   { path: 'member',
@@ -63,7 +64,8 @@ export const firebaseConfig = {
     SurveyComponent,
     PrettyjsonPipe,
     BarrelOfMonkeysComponent,
-    MonkeyskinComponent
+    MonkeyskinComponent,
+    TestingComponent
     ],
   imports: [
     BrowserModule,

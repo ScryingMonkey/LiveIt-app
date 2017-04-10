@@ -12,6 +12,7 @@ export class MemberLandingComponent implements OnInit {
   private user:User;
   private userData: Array<any>;
   private userProfileKeys: Array<string>;
+  private nextSteps: Array<string>;
 
   constructor( private _hub:HubService ) { 
     this.user = this._hub._user.getUser();
@@ -21,6 +22,7 @@ export class MemberLandingComponent implements OnInit {
       // this.processUser(res);
       this.updateUserProfileKeys(res.profile);
     });
+    this.nextSteps = this.getNextSteps();
   }
 
   ngOnInit() {
@@ -43,5 +45,14 @@ export class MemberLandingComponent implements OnInit {
     console.log('>> updated userProfileKeys :'+l);
     console.dir(l);
     this.userProfileKeys = l;
+  }
+  getNextSteps() {
+    let steps = [
+      'Next step',
+      'Next step',
+      'Next step',
+      'Next step',
+    ];
+    return steps;
   }
 }

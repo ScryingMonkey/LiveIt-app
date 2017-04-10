@@ -1,14 +1,38 @@
-<p>
-  member-landing works!
-</p>
+<div class="col-md-offset-2 col-md-8 member_dashboard ">
+  <h2>
+    Welcome back {{ user.profile.displayName }}!
+  </h2>
+  <div class = "bodytext">
+    <p>
+      You are currently a level {{ user.profile.userLevel }} {{ user.profile.userType }}.    
+    </p>
+    <br>
 
-<ul>
-<li *ngFor="let u of userProfileKeys">u {{ u }} : user[u] {{ user[u] }}</li>
-</ul>
-<!--<ul>Need data for:
-  <li *ngFor="let empty of empties">{{ empty }}</li>
-</ul>-->
+    <div *ngIf="!user.profile.students && user.profile.userType == 'Coach'">
+      Looks like you don't have any students.  
+      <br>
+      <br>
+      Here are some tips to finding students.'
+      <br>      
+    </div>
 
-<div *ngIf="_hub._test.testing | async">
-  {{ _hub._user.testJUser() }}
+    <div *ngIf="user.profile.students">
+      Here's a list of your current students:
+      <ul>
+        <li *ngFor="let s of user.profile.students">{{ u }} : {{ user.profile[u] }} </li>
+      </ul>
+      <br>
+    </div>
+
+    Here's what you can do to up your level:
+      <ul>
+        <li *ngFor="let step of nextSteps">{{ step }}</li>
+      </ul>
+    <br>
+
+    Here's are your current stats:
+    <ul>
+      <li *ngFor="let u of userProfileKeys">{{ u }} : {{ user.profile[u] }} </li>
+    </ul>
+   </div>
 </div>

@@ -45,6 +45,7 @@ export class HubService {
         // update user from the results of monkey report after it is final
         monkeyReport.forEach(m => { 
           console.log('>> profile['+m.key+'] = '+m.responses+' <<');
+          let profile = this._user.getUser().profile;
           profile[m.key] = m.responses[0]; 
           if (m.key == 'userType' && m.responses[0] == 'Coach'){ profile.isCoach == true; }
           if (m.key == 'userType' && m.responses[0] == 'Member'){ profile.isCoach == false; }
