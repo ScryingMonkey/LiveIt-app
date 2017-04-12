@@ -16,20 +16,16 @@ export class AuthService {
     private _af: AngularFire
     ){
     console.log('[ AuthService.constructor()');
-    // subscribe to auth object
-    this._af.auth.subscribe((res: FirebaseAuthState) => {
+    
+    this.auth.subscribe( res => console.log('>> _auth.auth updated'));  // subscribe to auth object
+    
+    this._af.auth.subscribe( (res: FirebaseAuthState) => {  // subscribe to _af.auth object
       console.log("[ AuthService.constructor._af.auth.subscription");
       if (res) { 
         console.log('...updating _auth.auth.email'+res.auth.email);
         let auth = new UserAuth();
-        // auth.displayName = res.auth.displayName;
-        // auth.email = res.auth.email;
-        // auth.photoURL = res.auth.photoURL;
-        // auth.providerId = res.auth.providerId;
-        // auth.uid = res.auth.uid;
-        // auth.userHasPicture = res.auth.photoURL.length > 0;
         auth.setValues( res.auth.displayName, res.auth.email,
-          res.auth.photoURL, res.auth.providerData, res.auth.uid);
+          res.auth.photoURL, res.auth.providerData[0].providerId, res.auth.uid);
         this.auth.next(auth);
       } else { 
         console.log('..._af.auth is null.');        
@@ -46,7 +42,7 @@ export class AuthService {
             { email: email, password: password, },
             { provider: AuthProviders.Password, method: AuthMethods.Password, } )
           .then(res => {
-            console.log('...success for '+email+', '+res);
+            console.log('...success for '+email+'; authstate: '+res);
             this.error.next(null);
           } )
           .catch(err => {
@@ -97,8 +93,10 @@ export class AuthService {
     // Create User in Firebase User db
     this._af.auth.createUser({ email: email, password: password })
       .then(res => {
-        console.log('...success signing up new email user.  '+res);
+        console.log('...success signing up new email user.  authstate: '+res);
+        console.dir(res);
         this.error.next(null);
+        this.loginWithEmail(email, password);
       } )
       .catch(err => { 
         console.log(err,'...error creating user from email.  '+err);

@@ -22,4 +22,5 @@ export class UserAuth {
         this.uid = uid;
         this.userHasPicture = photoURL != null;
     }
+    createKey(){ return this.email.replace('@','AT').replace('.','DOT'); }
 }

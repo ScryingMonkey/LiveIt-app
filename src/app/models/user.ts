@@ -1,31 +1,31 @@
 import { UserAuth, UserProfile } from './index';
 
 export class User {
-    public auth?: UserAuth
-    public profile?: UserProfile
+    public auth: UserAuth
+    public profile: UserProfile
     public key?: string
 
     constructor() { 
-        this.setValues(new UserAuth(), new UserProfile());
-        this.key = this.convertKey(new UserAuth().email);        
+        this.setValues(new UserAuth(), new UserProfile()); 
     }
-    newUser(auth:UserAuth):User {       
+    newUser():User {       
         let nuser = new User();
-        nuser.setValues(auth, new UserProfile());
+        nuser.setValues(new UserAuth(), new UserProfile());
+        nuser.profile.userType = 'new';
         return nuser; 
     }
     setValues(auth:UserAuth, profile:UserProfile) {
         this.auth = auth;
         this.profile = profile;
-        this.key = this.convertKey(auth.email);   
-             
+        this.key = auth.createKey();           
     }
-    setKey(key:string){ this.key = key; }
-    convertKey(email:string){ return email.replace('@','AT').replace('.','DOT'); }
     setAuth(auth:UserAuth) { 
         this.auth = auth; 
+        this.key = auth.createKey();
     }
-    setProfile(profile:UserProfile) { this.profile = profile; }
+    setProfile(profile:UserProfile) { 
+        this.profile = profile; 
+    }
 }
 
 

@@ -10,14 +10,16 @@ import { AuthService, TestService } from './index';
 
 @Injectable()
 export class UserService {
-  private userref:string = '/users';  
   private user: BehaviorSubject<User> = new BehaviorSubject(new User());
-  private userKey: BehaviorSubject<string> = new BehaviorSubject('');
-  private userListfbo: FirebaseListObservable<any[]>;
   private userList: BehaviorSubject<Array<any>> = new BehaviorSubject(new Array());
+
   private userfbo: FirebaseObjectObservable<any>;
+  private userListfbo: FirebaseListObservable<any[]>;
   private queryUserByKeyfbo: FirebaseListObservable<any>;
-  private displayName:string;
+  
+  private userref:string = '/users';  
+  private userKey: string = null;
+  private displayName:string = null;
 
 // Constructor and all subscriptions ===============================================
   constructor( 
@@ -27,135 +29,166 @@ export class UserService {
     private _auth: AuthService
     ){
     console.log('[ UserService.constructor()');
+    console.log('>> this.fbuserref: '+this.userref);  
+    this._test.printo('>> user instantiated', this.user.getValue());
 
-    console.log('>> this.fbuserref: '+this.userref);   
-    _auth.getAuth().subscribe( (auth) => {
+    this.user.subscribe( res => { // notify when user changes
+      console.log('>> user updated');
+      console.dir(res);
+     } ); 
+
+
+    _auth.getAuth().subscribe( (auth:UserAuth) => { // when auth changes
       this._test.printo('...auth updated',auth);
-      if (auth.email) { 
-        console.log('...res !null.  res.email'+auth.email);
-        let userKey = new User().convertKey(auth.email);        
-        this.userKey.next(userKey);
-        this.setUserAuth(auth);  // updates user when _auth.auth updates
-        console.log('>> updated userKey: '+new User().convertKey(auth.email));
-        // this.userfbo.take(1).toPromise().then((res:User) => {
-        //   this._test.printo('>> userfbo retrieved from db', res);
-        //   this.user.next(res);
-        // }).catch((err:Error) => console.log('>>Error pulling user from db: '+err.message));
-        this.setupFbos();
-        this.setupSubs(auth);
+      let user:User;
+      let routePath:string;
 
-        this.userListfbo.take(1).toPromise()
-        .then( res => {
-          let k = this.userKey.getValue();
-          if (this.isUserInList(k, res)) {
-            console.log('...found '+k+' in list');
+      if (auth.email) { // if firebase returns an authstate
+        console.log('...res !null.  res.email: '+auth.email);
+        // update global vars
+        if(!this.userKey){ 
+          this.userKey = auth.createKey();
+          console.log( '>> updated userKey: '+this.userKey );
+        }
+        if(!this.displayName) { 
+          this.displayName = auth.displayName; 
+          console.log( '>> updated displayName: '+this.displayName );
+        }
+        // setup local vars
+        this.userListfbo = this._af.database.list(this.userref);
+        this.userfbo = this._af.database.object('/users/'+this.userKey+'/profile');
 
-            this.userfbo.take(1).toPromise()
-            .then(res => {
-              console.log('...routing to landing page.')
-              this._test.printo('returned res from db', res);
-              this.routeToLandingPage(res);
-            })
-            .catch(err => console.log('...cannot route to landing page: '+err));
+        // pull user list from FB ./users
+        this.userListfbo.take(1).toPromise() // TODO: Replace this with a query
+          .then(list => { // after userList is pulled successfully
+            this._test.printo('>> userListfbo bound', list);
+            // set this.userList to FB ./users
+            this.userList.next(list);
+            if(this.isUserInList(this.userKey, list)){ // Check for user in userlist
+              // user found in list
+              console.log('...found '+this.userKey+' in list');     
+              // pull user and set this.user to userKey
+              user = this.pullUserFromDB(this.userKey);
 
-          } else {
-            console.log('...did not find '+k+' in list');
+            } else { // user not in list.  Build new user and add to list
+              // build User
+              user = this.buildNewUser(this.displayName, auth); 
+              // send local user to db
+              this.upateUserInDB(user); 
+            }
 
-            this.createUserInDB(auth);
-          }
-        }).catch( err => console.log('Error: '+err));
+            // set this.user to user
+            this.user.next(user); 
+            // route to landing
+            routePath = this.buildRoutePath(user); 
+            // route to route path
+            this.router.navigate( [routePath] ).then(v => {
+              console.log('...routing to landing page: '+routePath);
+          });
 
-        this.updateUserAuthInDB(userKey, auth);
-      } else {
+          }).catch((error:Error) => console.log('>> Error  pulling ./users : '+error.message));
+
+      } else { // if firebase doesn't return and authstate
         console.log('...res null.  res.email'+auth.email);
-        this.router.navigate( ['/login'] );  // if no _auth.auth object, route to login page
-    } });
-    
+        // if no _auth.auth object, route to login page
+        this.router.navigate( ['/login'] ).then(v => {
+          this.logout();
+          console.log('...routing to landing page: /login');
+        });
 
-  }
-// Setups ========================================================================================
-  setupFbos(){
-    this.userListfbo = this._af.database.list(this.userref);
-    console.log('...binding userfbo to key:'+this.userKey.getValue());
-    this.userfbo = this._af.database.object(this.userref+'/'+this.userKey.getValue())
-    // this.queryUserByKeyfbo = this._af.database.list(this.userref, {query: {  } });
-  }
-  setupSubs(auth) {
-    this.userListfbo.subscribe(res => {
-      this._test.printo('>> userListfbo bound', res);
-      this.userList.next(res);
+      } 
     });
-
-    this.userfbo.subscribe(res => {
-      this._test.printo('>> userfbo bound: ', res);
-      this.user.next(res);
-    });
-
-    this.user.subscribe( res => console.log('>> user updated') );
   }
 
 // DB Update Methods ===========================================================
-  updateUserAuthInDB(userKey:String, auth:UserAuth){
-    console.log('[ UserService.updateUserAuthInDB()');       
-    this._af.database.object('/users/'+userKey+'/auth').set( auth )
+  updateUserAuthInDB(userKey:string, auth:UserAuth){
+    console.log('[ UserService.updateUserAuthInDB()'); 
+    let fbo = this._af.database.object('/users/'+userKey+'/auth');
+    fbo.set( auth ) 
       .then( v => console.log('>> successfully updated auth for '+auth.email))
       .catch(err => console.log(err,'>> Error: '+err.message));
+    fbo.$ref.off();
   }
-  updateUserProfileInDB(userKey:String, profile:UserProfile){
-    console.log('[ UserService.updateUserProfileInDB()');       
-    this._af.database.object('/users/'+userKey+'/profile').set( profile )
+  updateUserProfileInDB(userKey:string, profile:UserProfile){
+    console.log('[ UserService.updateUserProfileInDB()');               
+    let fbo = this._af.database.object('/users/'+userKey+'/profile');
+    fbo.set( profile )
       .then( v => console.log('>> successfully updated profile for '+profile.displayName))
       .catch(err => console.log(err,'Error: '+err.message));
+    fbo.$ref.off();
   }
   upateUserInDB(user:User){
     console.log('[ UserService.upateUserInDB()');   
-    let userKey = user.convertKey(user.auth.email);
-    user.key = userKey;
-    this._af.database.object('/users/'+user.key).set( {key:user.key} ); 
-    this.updateUserAuthInDB(userKey, user.auth);
-    this.updateUserProfileInDB(userKey, user.profile);
+    let fbo = this._af.database.object('/users/'+user.key);
+    fbo.set( user )
+      .then( v => console.log('>> successfully updated user for '+user.key))
+      .catch(err => console.log(err,'Error: '+err.message));
+    fbo.$ref.off();
   }
-  createUserInDB(auth:UserAuth) {
-    // Need to be logged in before creating user
-    console.log('[ UserService.createUserinDB()');   
-    let nuser = new User().newUser(auth);
-    nuser.profile.displayName = this.displayName;
-    this.upateUserInDB(nuser);
-    this.routeToLandingPage(nuser);
+  pullUserFromDB(key:string):User {
+    console.log('[ UserService.pullUserFromDB()');                   
+    let user:User;
+    let fbo = this._af.database.object(this.userref+'/'+this.userKey);
+    fbo.take(1).toPromise()  
+      .then((u:User) => {  // if user in userList, return user
+        this._test.printo('returned res from db', u);
+        user = u;
+      }).catch((err:Error) => { // else return null
+        user = null;
+        console.log('...failed to pull user from db: '+err.message);
+      });
+    console.log('...returning user from db: '+user.key);
+    fbo.$ref.off();
+    console.log('...returning user from db: '+user.key);
+    return user;
   }
 
 // Helper Methods ===========================================================
   isUserInList(key, userList){ // check list of users for key.  If not found return false.
-    console.log('[ UserService.isUSerinList('+key+', userList)');
-    this._test.printo('...userList in isUserInList',userList);
+    console.log('[ UserService.isUserinList('+key+', userList)');
+    // this._test.printo('userList in isUserInList',userList);
     for (let n = 0; n < userList.length; n++) {
       // console.log('...comparing '+key+' to '+userList[n].key)
-      if (userList[n].key == key) { return true; }
+      if (userList[n].key == key) { 
+        console.log('...yes'); 
+        return true; 
+      }
     }
+    console.log('...no');     
     return false;
   }
-  routeToLandingPage(user:User){
-    // let user = this.user.getValue();
+  buildNewUser(displayName, auth):User {
+    console.log('[ UserService.buildNewUser('+displayName+', auth)');
+    let nuser = new User().newUser();
+    let profile = new UserProfile();
+    profile.displayName = this.displayName;
+    profile.userType = 'new';
+    nuser.setValues(auth,profile);
+    this._test.printo('built nuser with profile', profile);
+    this._test.printo('built nuser with displayName: '+displayName, nuser);
+    return nuser;
+  }
+  buildRoutePath(user:User):string {
     console.log('[ UserService.routeToLandingPage()...'+user.profile.userType); 
-    this._test.printo('...user',user);      
+    // build route path
     let routePath:string = '';
     if (user.profile.userType == 'dummy') {
-      routePath = 'survey';
-      // this._auth.logout();
+      routePath = 'login';
+      this.logout();
     } else if (user.profile.needInfo || user.profile.userType == 'new') { 
       routePath = 'survey'; 
     } else { 
       routePath = ''+user.profile.userType.toLowerCase();//+'/'v+this.user.getValue().uid;
     }
-    this.router.navigate( [routePath] );
+    return routePath;
   }
 
 // Logins, Logouts and Sign ups =============================================
 
   signUpWithEmail(displayName:string, email:string, password:string){ 
-    console.log('[ UserService.signUpWithEmail('+displayName+', '+email+', '+password+')'); 
-    this._auth.signUpWithEmail(email, password);
+    console.log('[ UserService.signUpWithEmail('+displayName+', '+email+', '+password+')');   
     this.displayName = displayName;
+    this._auth.signUpWithEmail(email, password);
   }
   loginWithEmail(email, password) { 
     console.log('[ UserService.loginWithEmail('+email+', '+password+')');        
@@ -171,8 +204,11 @@ export class UserService {
   }
   logout() {
       console.log("[ UserService.logout()");
-      this.userListfbo.$ref.off();
-      this.userfbo.$ref.off();
+      if(this.userListfbo) { this.userListfbo.$ref.off(); console.log('>> userListfbo subscription off');}
+      if(this.userfbo) { this.userfbo.$ref.off(); console.log('>> userfbo subscription off');}
+      // set this.user to dummy
+      this.user.next(new User()); 
+      // logout and route to login page
       this._af.auth.logout(); // This updates _auth.auth, which triggers a user update
       this.router.navigate(['login']);
   }
@@ -188,18 +224,16 @@ export class UserService {
   getUserAuth():UserAuth { return this.user.getValue().auth; }
   setUserAuth(auth:UserAuth) { 
     let user = this.user.getValue();
-    // user.auth = auth;
-    // this.user.next(user);
-    console.log('>> updating user auth')
-    this.updateUserAuthInDB(user.key, auth);
+    user.auth = auth;
+    this.user.next(user);
+    console.log('>> updated user auth.  '+auth.email);
   }
   getUserProfile():UserProfile { return this.user.getValue().profile; }
   setUserProfile(profile:UserProfile) { 
     let user = this.user.getValue();
-    // user.profile = profile;
-    // this.user.next(user);
-    console.log('>> updating user profile')
-    this.updateUserProfileInDB(user.key, profile);    
+    user.profile = profile;
+    this.user.next(user);
+    console.log('>> updated user profile. '+profile.displayName);    
   }
   getUserListo() { return this.userListfbo; }
 
