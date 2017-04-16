@@ -16,11 +16,13 @@ export class MemberLandingComponent implements OnInit {
 
   constructor( private _hub:HubService ) { 
     this.user = this._hub._user.getUser();
-    this.updateUserProfileKeys(this.user.profile);    
+    this._hub._test.printo('user in member-landing', this.user);
+    // this.updateUserProfileKeys(this.user.profile);    
     this._hub._user.getUserao$().subscribe( (res:User) => {
       this.user = res;
+      this._hub._test.printo('updated user in member-landing', this.user);    
       // this.processUser(res);
-      this.updateUserProfileKeys(res.profile);
+      // this.updateUserProfileKeys(res.profile);
     });
     this.nextSteps = this.getNextSteps();
   }

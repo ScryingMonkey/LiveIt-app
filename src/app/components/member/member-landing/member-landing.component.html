@@ -8,7 +8,8 @@
     </p>
     <br>
 
-    <div *ngIf="!user.profile.students && user.profile.userType == 'Coach'">
+    <div *ngIf="user.profile.userType == 'Coach' && 
+              (!user.profile.students || !user.profile.students.length==0)">
       Looks like you don't have any students.  
       <br>
       <br>
@@ -16,7 +17,8 @@
       <br>      
     </div>
 
-    <div *ngIf="user.profile.students">
+    <div *ngIf="user.profile.userType == 'Coach' && 
+                      user.profile.students.length > 0">
       Here's a list of your current students:
       <ul>
         <li *ngFor="let s of user.profile.students">{{ u }} : {{ user.profile[u] }} </li>
@@ -32,7 +34,9 @@
 
     Here's are your current stats:
     <ul>
-      <li *ngFor="let u of userProfileKeys">{{ u }} : {{ user.profile[u] }} </li>
+      <li *ngFor="let u of user.profile.stats">
+        {{ u.k }} : {{ u.v }} 
+      </li>
     </ul>
    </div>
 </div>

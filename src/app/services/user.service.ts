@@ -44,7 +44,7 @@ export class UserService {
       let routePath:string;
 
       if (auth.email) { // if firebase returns an authstate
-        console.log('...res !null.  res.email: '+auth.email);
+        console.log('...auth.email !null.  auth.email: '+auth.email);
         // update global vars
         if(!this.userKey){ 
           this.userKey = auth.createKey();
@@ -68,25 +68,30 @@ export class UserService {
               // user found in list
               console.log('...found '+this.userKey+' in list');     
               // pull user and set this.user to userKey
-              user = this.pullUserFromDB(this.userKey);
-
+              this.pullUserFromDB(this.userKey)
+                .then((u:User) => {  // if user in userList, return user
+                  this._test.printo('returned res from db', u);
+                  // route to landing page
+                  this.routeToLandingPage(u);
+                }).catch((err:Error) => { // else return null
+                  console.log('...failed to pull user from db: '+err.message);
+                  user = null;
+                  this.logout();               
+                });
             } else { // user not in list.  Build new user and add to list
               // build User
               user = this.buildNewUser(this.displayName, auth); 
               // send local user to db
               this.upateUserInDB(user); 
+              // route to landing page
+              this.routeToLandingPage(user);
             }
 
-            // set this.user to user
-            this.user.next(user); 
-            // route to landing
-            routePath = this.buildRoutePath(user); 
-            // route to route path
-            this.router.navigate( [routePath] ).then(v => {
-              console.log('...routing to landing page: '+routePath);
-          });
 
-          }).catch((error:Error) => console.log('>> Error  pulling ./users : '+error.message));
+          }).catch((error:Error) => {
+            console.log('>> Error  pulling ./users : '+error.message);
+            this.logout();
+          });
 
       } else { // if firebase doesn't return and authstate
         console.log('...res null.  res.email'+auth.email);
@@ -125,33 +130,28 @@ export class UserService {
       .catch(err => console.log(err,'Error: '+err.message));
     fbo.$ref.off();
   }
-  pullUserFromDB(key:string):User {
+  pullUserFromDB(key:string):Promise<User> {
     console.log('[ UserService.pullUserFromDB()');                   
     let user:User;
     let fbo = this._af.database.object(this.userref+'/'+this.userKey);
-    fbo.take(1).toPromise()  
-      .then((u:User) => {  // if user in userList, return user
-        this._test.printo('returned res from db', u);
-        user = u;
-      }).catch((err:Error) => { // else return null
-        user = null;
-        console.log('...failed to pull user from db: '+err.message);
-      });
-    console.log('...returning user from db: '+user.key);
-    fbo.$ref.off();
-    console.log('...returning user from db: '+user.key);
-    return user;
+    let userPromise:Promise<User> = fbo.take(1).toPromise();
+    return userPromise;
+    // fbo.$ref.off();
   }
 
 // Helper Methods ===========================================================
   isUserInList(key, userList){ // check list of users for key.  If not found return false.
     console.log('[ UserService.isUserinList('+key+', userList)');
     // this._test.printo('userList in isUserInList',userList);
-    for (let n = 0; n < userList.length; n++) {
-      // console.log('...comparing '+key+' to '+userList[n].key)
-      if (userList[n].key == key) { 
-        console.log('...yes'); 
-        return true; 
+    if(userList == null || userList.length < 1) { 
+      return false; 
+    } else {
+      for (let n = 0; n < userList.length; n++) {
+        // console.log('...comparing '+key+' to '+userList[n].key)
+        if (userList[n].key == key) { 
+          console.log('...yes.  Found user: '+key); 
+          return true; 
+        }
       }
     }
     console.log('...no');     
@@ -181,6 +181,17 @@ export class UserService {
       routePath = ''+user.profile.userType.toLowerCase();//+'/'v+this.user.getValue().uid;
     }
     return routePath;
+  }
+  routeToLandingPage(user:User){
+    let routePath = '';
+    // set this.user to user
+    this.user.next(user); 
+    // route to landing
+    routePath = this.buildRoutePath(user); 
+    // route to route path
+    this.router.navigate( [routePath] ).then(v => {
+      console.log('...routing to landing page: '+routePath);
+    });
   }
 
 // Logins, Logouts and Sign ups =============================================
