@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from "rxjs/Rx";
+import { Router }   from '@angular/router';
+
 import { NotificationsService } from '../components/notifications/index';
 import { TestService, BarrelOfMonkeysService, UserService, AuthService } from './index';
 import { Monkey, UserProfile } from '../models/index';
@@ -17,11 +19,12 @@ export class HubService {
     public _test:TestService,
     public _bom:BarrelOfMonkeysService,
     public _user:UserService,
-    public _auth:AuthService
+    public _auth:AuthService,
+    public _route:Router
   ) {
     this._auth.getErrorao$().subscribe(err =>{
       if(err){ this._toast.toast(true, 'error', 'Error:'+err.name, err.message); 
-      } else { this._toast.toast(false, 'error', 'Error', 'Wrong password.'); 
+      } else { this._toast.toast(false, 'error', 'Error', 'No error'); 
       }
     });
     this._user.getUserao$().subscribe( res=>{
@@ -55,7 +58,9 @@ export class HubService {
         console.log('...updated profile');
         console.dir(profile);
         this._user.setUserProfile(profile);
-        this._user.buildRoutePath(this._user.getUser());
+        this._user.updateUserProfileInDB(this._user.getUser().key,profile);
+        let routePath = this._user.buildRoutePath(this._user.getUser());
+        this._route.navigate([routePath]);
     });
 
     this.loadingAnimationUrl = 'data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA==';
