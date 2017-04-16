@@ -1,10 +1,10 @@
-import { LiveItAppPage } from './app.po';
+import { TestappPage } from './app.po';
 
-describe('live-it-app App', () => {
-  let page: LiveItAppPage;
+describe('testapp App', () => {
+  let page: TestappPage;
 
   beforeEach(() => {
-    page = new LiveItAppPage();
+    page = new TestappPage();
   });
 
   it('should display message saying app works', () => {
